@@ -90,6 +90,6 @@ vim_brier <- function(time,
   }
 
   return(data.frame(t = landmark_times,
-                    brier = brier,
-                    IF.vals = IF.vals))
+                    brier = brier))#,
+                    #IF.vals = IF.vals))
 }
