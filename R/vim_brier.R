@@ -73,6 +73,7 @@ vim_brier <- function(time,
   # places to hold the value of the influence function, as well as the actual estimate
   IF.vals <- matrix(NA, nrow=n, ncol=length(landmark_times))
   brier <- rep(NA, length(landmark_times))
+  brier_plug <- rep(NA, length(landmark_times))
 
   for(i in 1:length(landmark_times)) {
     t0 <- landmark_times[i]
@@ -94,10 +95,12 @@ vim_brier <- function(time,
     if.func <- phi0 + phi_tilde_0 - phi0s - phi_tilde_0s
 
     brier[i] <- mean(-(f_hat_k - F_hat_k)^2) - mean(-(fs_hat_k - F_hat_k)^2) + mean(if.func)
+    brier_plug[i] <- mean(-(f_hat_k - F_hat_k)^2) - mean(-(fs_hat_k - F_hat_k)^2)
     IF.vals[,i] <- if.func
   }
 
   return(data.frame(t = landmark_times,
-                    brier = brier))#,
+                    brier = brier,
+                    brier_plug = brier_plug))#,
                     #IF.vals = IF.vals))
 }
