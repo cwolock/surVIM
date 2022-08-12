@@ -12,6 +12,13 @@ vim_brier <- function(time,
                                            "survSL.gam",
                                            "survSL.rfsrc")
 
+  # time <- train$y
+  # event <- train$delta
+  # X <- train[,1:dimension]
+  # X_reduced <- train[,2:dimension]
+  # approx_times <- approx_times
+  # landmark_times <- landmark_times
+
   # NOTE: Ted's function breaks with just a single covariate
   # also there are weird namespace issues with predict method
   # also why is new.times a mandatory argument
@@ -70,6 +77,7 @@ vim_brier <- function(time,
   for(i in 1:length(landmark_times)) {
     t0 <- landmark_times[i]
     k <- min(which(approx_times >= t0))
+    F_hat_k <- 1-S_hat[,k]
     S_hat_k <- S_hat[,k]
     f_hat_k <- f_hat[,i]
     fs_hat_k <- fs_hat[,i]
@@ -77,15 +85,15 @@ vim_brier <- function(time,
     inner.func.2 <- int.vals[,k]
     KM.if <- -S_hat_k * ( inner.func.1 - inner.func.2)
 
-    phi0 <- 2 * KM.if * (f_hat_k - S_hat_k)
-    phi_tilde_0 <- -(f_hat_k - S_hat_k)^2 - mean(-(f_hat_k - S_hat_k)^2)
+    phi0 <- 2 * KM.if * (f_hat_k - F_hat_k)
+    phi_tilde_0 <- -(f_hat_k - F_hat_k)^2 - mean(-(f_hat_k - F_hat_k)^2)
 
-    phi0s <- 2 * KM.if * (fs_hat_k - S_hat_k)
-    phi_tilde_0s <- -(fs_hat_k - S_hat_k)^2 - mean(-(fs_hat_k - S_hat_k)^2)
+    phi0s <- 2 * KM.if * (fs_hat_k - F_hat_k)
+    phi_tilde_0s <- -(fs_hat_k - F_hat_k)^2 - mean(-(fs_hat_k - F_hat_k)^2)
 
     if.func <- phi0 + phi_tilde_0 - phi0s - phi_tilde_0s
 
-    brier[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2) + mean(if.func)
+    brier[i] <- mean(-(f_hat_k - F_hat_k)^2) - mean(-(fs_hat_k - F_hat_k)^2) + mean(if.func)
     IF.vals[,i] <- if.func
   }
 
