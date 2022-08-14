@@ -86,10 +86,11 @@ vim_brier <- function(time,
     inner.func.2 <- int.vals[,k]
     KM.if <- -S_hat_k * ( inner.func.1 - inner.func.2)
 
-    phi0 <- 2 * KM.if * (f_hat_k - F_hat_k)
+    # should phi_0 and phi_0s be negative or positive...
+    phi0 <- -2 * KM.if * (f_hat_k - F_hat_k)
     phi_tilde_0 <- -(f_hat_k - F_hat_k)^2 - mean(-(f_hat_k - F_hat_k)^2)
 
-    phi0s <- 2 * KM.if * (fs_hat_k - F_hat_k)
+    phi0s <- -2 * KM.if * (fs_hat_k - F_hat_k)
     phi_tilde_0s <- -(fs_hat_k - F_hat_k)^2 - mean(-(fs_hat_k - F_hat_k)^2)
 
     if.func <- phi0 + phi_tilde_0 - phi0s - phi_tilde_0s
