@@ -94,13 +94,13 @@ vim_brier <- function(time,
     event_fit_reduced <- survival::survreg(survival::Surv(time, event) ~ ., data = df_reduced,
                                            dist = "lognormal")
     event_q_pred <- predict(event_fit,
-                            newdata = X,
+                            newdata = X_holdout,
                             type = 'quantile', p = seq(0, .999, by=.001))
     cens_q_pred <- predict(cens_fit,
-                           newdata = X,
+                           newdata = X_holdout,
                            type = 'quantile', p = seq(0, .999, by=.001))
     event_q_pred_reduced <- predict(event_fit_reduced,
-                                    newdata = X_reduced,
+                                    newdata = X_reduced_holdout,
                                     type = 'quantile', p = seq(0, .999, by=.001))
     # this is here to handle exact 0 times - see survSuperLearner code
     pos.pred <- rep(1, nrow(X))
@@ -151,6 +151,7 @@ vim_brier <- function(time,
   brier_plug <- rep(NA, length(landmark_times))
   S_t <- rep(NA, length(landmark_times))
   G_t <- rep(NA, length(landmark_times))
+  var_est <- rep(NA, length(landmkark_times))
   for(i in 1:length(landmark_times)) {
     t0 <- landmark_times[i]
     k <- min(which(approx_times >= t0))
@@ -177,11 +178,13 @@ vim_brier <- function(time,
     IF.vals[,i] <- if.func
     S_t[i] <- mean(S_hat_k)
     G_t[i] <- mean(G_hat_k)
+    var_est[i] <- var(if.fun)
   }
 
   return(data.frame(t = landmark_times,
                     brier = brier,
                     brier_plug = brier_plug,
                     S_t = S_t,
-                    G_t = G_t))
+                    G_t = G_t,
+                    var_est = var_est))
 }
