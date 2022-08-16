@@ -4,7 +4,8 @@ vim_brier <- function(time,
                       X_reduced,
                       approx_times,
                       landmark_times,
-                      nuisance){
+                      nuisance,
+                      holdout){
   event.SL.library <- cens.SL.library <- c("survSL.km",
                                            "survSL.coxph",
                                            "survSL.expreg",
@@ -24,6 +25,11 @@ vim_brier <- function(time,
   # also there are weird namespace issues with predict method
   # also why is new.times a mandatory argument
   # currently we assume approx_times include landmark times
+  dimension <- 4
+  time_holdout <- holdout$y
+  event_holdout <- holdout$delta
+  X_holdout <-holdout[,1:dimension]
+  X_reduced_holdout <- holdout[,2:dimension]
 
   if (nuisance == "survSL"){
     fit <- survSuperLearner::survSuperLearner(time = time,
@@ -36,15 +42,30 @@ vim_brier <- function(time,
                                               verbose = FALSE,
                                               obsWeights = NULL,
                                               control = list(initWeightAlg = "survSL.rfsrc"))
+    # reverse_fit <- survSuperLearner::survSuperLearner(time = time,
+    #                                           event = 1-event,
+    #                                           X = X,
+    #                                           newX = X,
+    #                                           new.times = c(1),
+    #                                           event.SL.library = event.SL.library,
+    #                                           cens.SL.library = cens.SL.library,
+    #                                           verbose = FALSE,
+    #                                           obsWeights = NULL,
+    #                                           control = list(initWeightAlg = "survSL.rfsrc"))
     # oracle prediction, as well as nuisance predictions
     f_hat <- survSuperLearner:::predict.survSuperLearner(fit,
-                                                         newdata = X,
+                                                         newdata = X_holdout,
                                                          new.times = landmark_times)$event.SL.predict
     nuis_preds <- survSuperLearner:::predict.survSuperLearner(fit,
-                                                              newdata = X,
+                                                              newdata = X_holdout,
                                                               new.times = approx_times)
+    # nuis_preds_reverse <- survSuperLearner:::predict.survSuperLearner(reverse_fit,
+    #                                                           newdata = X,
+    #                                                           new.times = approx_times)
     S_hat <- nuis_preds$event.SL.predict
     G_hat <- nuis_preds$cens.SL.predict
+    # S_hat_reverse <- nuis_preds_reverse$cens.SL.predict
+    # G_hat_reverse <- nuis_preds_reverse$event.SL.predict
     fit_reduced <- survSuperLearner::survSuperLearner(time = time,
                                                       event = event,
                                                       X = X_reduced,
@@ -57,7 +78,7 @@ vim_brier <- function(time,
                                                       control = list(initWeightAlg = "survSL.rfsrc"))
     # reduced oracle predictions
     fs_hat <- survSuperLearner:::predict.survSuperLearner(fit_reduced,
-                                                          newdata = X_reduced,
+                                                          newdata = X_reduced_holdout,
                                                           new.times = landmark_times)$event.SL.predict
   } else if (nuisance == "param_AFT"){
     df_full <- data.frame(time = time,
@@ -109,7 +130,8 @@ vim_brier <- function(time,
     })), silent = TRUE)
   }
 
-
+  time <- time_holdout
+  event <- event_holdout
   n <- length(time)
   # calculate integral for KM influence function
   # check left vs right continuous stuff here
