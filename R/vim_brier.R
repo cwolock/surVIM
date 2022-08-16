@@ -151,7 +151,7 @@ vim_brier <- function(time,
   brier_plug <- rep(NA, length(landmark_times))
   S_t <- rep(NA, length(landmark_times))
   G_t <- rep(NA, length(landmark_times))
-  var_est <- rep(NA, length(landmkark_times))
+  var_est <- rep(NA, length(landmark_times))
   for(i in 1:length(landmark_times)) {
     t0 <- landmark_times[i]
     k <- min(which(approx_times >= t0))
