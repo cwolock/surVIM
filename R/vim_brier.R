@@ -178,7 +178,7 @@ vim_brier <- function(time,
     IF.vals[,i] <- if.func
     S_t[i] <- mean(S_hat_k)
     G_t[i] <- mean(G_hat_k)
-    var_est[i] <- var(if.fun)
+    var_est[i] <- var(if.func)
   }
 
   return(data.frame(t = landmark_times,
