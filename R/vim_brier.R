@@ -146,7 +146,7 @@ vim_brier <- function(time,
   S_hat_Y <- sapply(1:n, function(i) stepfun(approx_times, c(1,S_hat[i,]), right = FALSE)(time[i]))
   G_hat_Y <- sapply(1:n, function(i) stepfun(approx_times, c(1,G_hat[i,]), right = TRUE)(time[i]))
   # places to hold the value of the influence function, as well as the actual estimate
-  IF.vals <- matrix(NA, nrow=n, ncol=length(landmark_times))
+  #IF.vals <- matrix(NA, nrow=n, ncol=length(landmark_times))
   brier <- rep(NA, length(landmark_times))
   brier_plug <- rep(NA, length(landmark_times))
   S_t <- rep(NA, length(landmark_times))
@@ -179,7 +179,7 @@ vim_brier <- function(time,
 
     brier[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2) + mean(if.func)
     brier_plug[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2)
-    IF.vals[,i] <- if.func
+    #IF.vals[,i] <- if.func
     S_t[i] <- mean(S_hat_k)
     G_t[i] <- mean(G_hat_k)
     var_est[i] <- var(if.func)
