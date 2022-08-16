@@ -172,6 +172,10 @@ vim_brier <- function(time,
     phi_tilde_0s <- -(fs_hat_k - S_hat_k)^2 - mean(-(fs_hat_k - S_hat_k)^2)
 
     if.func <- phi0 + phi_tilde_0 - phi0s - phi_tilde_0s
+    mu <- mean(if.func)
+    sigma <- sd(if.func)
+    if.func.z <- (if.func-mu)/sigma
+    if.func <- if.func[if.func.z > -4]
 
     brier[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2) + mean(if.func)
     brier_plug[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2)
