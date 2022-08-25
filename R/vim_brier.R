@@ -14,12 +14,12 @@ vim_brier <- function(time,
                                            "survSL.gam",
                                            "survSL.rfsrc")
 
-  # time <- train$y
-  # event <- train$delta
-  # X <- train[,1:dimension]
-  # X_reduced <- train[,2:dimension]
-  # approx_times <- approx_times
-  # landmark_times <- landmark_times
+  time <- train$y
+  event <- train$delta
+  X <- train[,1:dimension]
+  X_reduced <- train[,2:dimension]
+  approx_times <- approx_times
+  landmark_times <- landmark_times
 
   # NOTE: Ted's function breaks with just a single covariate
   # also there are weird namespace issues with predict method
@@ -171,19 +171,24 @@ vim_brier <- function(time,
     phi0s <- 2 * KM.if * (fs_hat_k - S_hat_k)
     phi_tilde_0s <- -(fs_hat_k - S_hat_k)^2 - mean(-(fs_hat_k - S_hat_k)^2)
 
+    # eta0 <- -mean(S_hat_k*(1 - S_hat_k))
+    # eta0_if_tilde <- -S_hat_k*(1 - S_hat_k) - mean(-S_hat_k*(1 - S_hat_k))
+    # eta0_if <- -KM.if + 2*KM.if*S_hat_k
+
     if.func <- phi0 + phi_tilde_0 - phi0s - phi_tilde_0s
-    mu <- mean(if.func)
-    sigma <- sd(if.func)
-    if.func.z <- (if.func-mu)/sigma
-    if.func <- if.func[if.func.z > -4 & if.func.z < 4]
-    print(sum(if.func.z < -5 | if.func.z > 5)/length(if.func.z)*100)
+    # if.func_eta <- eta0_if_tilde + eta0_if
+    # mu <- mean(if.func)
+    # sigma <- sd(if.func)
+    # if.func.z <- (if.func-mu)/sigma
+    # if.func <- if.func[if.func.z > -4 & if.func.z < 4]
+    # print(sum(if.func.z < -5 | if.func.z > 5)/length(if.func.z)*100)
 
     brier[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2) + mean(if.func)
     brier_plug[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2)
     #IF.vals[,i] <- if.func
     S_t[i] <- mean(S_hat_k)
     G_t[i] <- mean(G_hat_k)
-    var_est[i] <- var(if.func)
+    var_est[i] <- mean(if.func^2)#var(if.func)
   }
 
   return(data.frame(t = landmark_times,
