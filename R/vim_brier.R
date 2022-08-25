@@ -14,12 +14,12 @@ vim_brier <- function(time,
                                            "survSL.gam",
                                            "survSL.rfsrc")
 
-  time <- train$y
-  event <- train$delta
-  X <- train[,1:dimension]
-  X_reduced <- train[,2:dimension]
-  approx_times <- approx_times
-  landmark_times <- landmark_times
+  # time <- train$y
+  # event <- train$delta
+  # X <- train[,1:dimension]
+  # X_reduced <- train[,2:dimension]
+  # approx_times <- approx_times
+  # landmark_times <- landmark_times
 
   # NOTE: Ted's function breaks with just a single covariate
   # also there are weird namespace issues with predict method
