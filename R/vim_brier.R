@@ -174,7 +174,7 @@ vim_brier <- function(time,
     # phi_tilde_0s_old <- -(fs_hat_k - S_hat_k)^2 - mean(-(fs_hat_k - S_hat_k)^2)
 
     phi0 <- 2*f_hat_k*KM.if - KM.if
-    phi_tilde_0 <- 2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k
+    phi_tilde_0 <- 2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k - mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k)
     # phi0s <- 2*fs_hat_k*KM.if - KM.if
     # phi_tilde_0s <- 2*fs_hat_k*S_hat_k - fs_hat_k^2 - S_hat_k
 
