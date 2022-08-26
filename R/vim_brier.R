@@ -167,23 +167,23 @@ vim_brier <- function(time,
     KM.if <- -S_hat_k * ( inner.func.1 - inner.func.2)
 
     # should phi_0 and phi_0s be negative or positive...
-    phi0_old <- 2 * KM.if * (f_hat_k - S_hat_k)
-    phi_tilde_0_old <- -(f_hat_k - S_hat_k)^2 - mean(-(f_hat_k - S_hat_k)^2)
-
-    phi0s_old <- 2 * KM.if * (fs_hat_k - S_hat_k)
-    phi_tilde_0s_old <- -(fs_hat_k - S_hat_k)^2 - mean(-(fs_hat_k - S_hat_k)^2)
+    # phi0_old <- 2 * KM.if * (f_hat_k - S_hat_k)
+    # phi_tilde_0_old <- -(f_hat_k - S_hat_k)^2 - mean(-(f_hat_k - S_hat_k)^2)
+    #
+    # phi0s_old <- 2 * KM.if * (fs_hat_k - S_hat_k)
+    # phi_tilde_0s_old <- -(fs_hat_k - S_hat_k)^2 - mean(-(fs_hat_k - S_hat_k)^2)
 
     phi0 <- 2*f_hat_k*KM.if - KM.if
     phi_tilde_0 <- 2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k
-    phi0s <- 2*fs_hat_k*KM.if - KM.if
-    phi_tilde_0s <- 2*fs_hat_k*S_hat_k - fs_hat_k^2 - S_hat_k
+    # phi0s <- 2*fs_hat_k*KM.if - KM.if
+    # phi_tilde_0s <- 2*fs_hat_k*S_hat_k - fs_hat_k^2 - S_hat_k
 
     # eta0 <- -mean(S_hat_k*(1 - S_hat_k))
     # eta0_if_tilde <- -S_hat_k*(1 - S_hat_k) - mean(-S_hat_k*(1 - S_hat_k))
     # eta0_if <- -KM.if + 2*KM.if*S_hat_k
 
-    if.func <- phi0 + phi_tilde_0 - phi0s - phi_tilde_0s
-    if.func_old <- phi0_old + phi_tilde_0_old - phi0s_old - phi_tilde_0s_old
+    if.func <- phi0 + phi_tilde_0# - phi0s - phi_tilde_0s
+    # if.func_old <- phi0_old + phi_tilde_0_old - phi0s_old - phi_tilde_0s_old
     # if.func_eta <- eta0_if_tilde + eta0_if
     # mu <- mean(if.func)
     # sigma <- sd(if.func)
@@ -191,12 +191,12 @@ vim_brier <- function(time,
     # if.func <- if.func[if.func.z > -4 & if.func.z < 4]
     # print(sum(if.func.z < -5 | if.func.z > 5)/length(if.func.z)*100)
 
-    brier[i] <- mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k) -
-      mean(2*fs_hat_k*S_hat_k - fs_hat_k^2 - S_hat_k) + mean(if.func)
-    brier_plug[i] <- mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k) -
-      mean(2*fs_hat_k*S_hat_k - fs_hat_k^2 - S_hat_k)
-    brier_old[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2) + mean(if.func_old)
-    brier_plug_old[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2)
+    brier[i] <- mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k) + mean(if.func) #-
+      #mean(2*fs_hat_k*S_hat_k - fs_hat_k^2 - S_hat_k)
+    brier_plug[i] <- mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k)# -
+      #mean(2*fs_hat_k*S_hat_k - fs_hat_k^2 - S_hat_k)
+    # brier_old[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2) + mean(if.func_old)
+    # brier_plug_old[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2)
     #IF.vals[,i] <- if.func
     S_t[i] <- mean(S_hat_k)
     G_t[i] <- mean(G_hat_k)
