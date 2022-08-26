@@ -4,24 +4,11 @@ vim_brier <- function(time,
                       X_reduced,
                       approx_times,
                       landmark_times,
-                      nuisance,
+                      f_hat,
+                      fs_hat,
+                      S_hat,
+                      G_hat,
                       holdout){
-
-  event.SL.library <- cens.SL.library <- c("survSL.km",
-                                           "survSL.coxph",
-                                           "survSL.expreg",
-                                           "survSL.weibreg",
-                                           "survSL.loglogreg",
-                                           "survSL.gam",
-                                           "survSL.rfsrc",
-                                           "survSL.AFTreg")
-
-  # time <- train$y
-  # event <- train$delta
-  # X <- train[,1:dimension]
-  # X_reduced <- train[,2:dimension]
-  # approx_times <- approx_times
-  # landmark_times <- landmark_times
 
   # NOTE: Ted's function breaks with just a single covariate
   # also there are weird namespace issues with predict method
@@ -33,104 +20,6 @@ vim_brier <- function(time,
   X_holdout <-holdout[,1:dimension]
   X_reduced_holdout <- holdout[,2:dimension]
 
-  if (nuisance == "survSL"){
-    fit <- survSuperLearner::survSuperLearner(time = time,
-                                              event = event,
-                                              X = X,
-                                              newX = X,
-                                              new.times = c(1),
-                                              event.SL.library = event.SL.library,
-                                              cens.SL.library = cens.SL.library,
-                                              verbose = FALSE,
-                                              obsWeights = NULL,
-                                              control = list(initWeightAlg = "survSL.rfsrc"))
-    # reverse_fit <- survSuperLearner::survSuperLearner(time = time,
-    #                                           event = 1-event,
-    #                                           X = X,
-    #                                           newX = X,
-    #                                           new.times = c(1),
-    #                                           event.SL.library = event.SL.library,
-    #                                           cens.SL.library = cens.SL.library,
-    #                                           verbose = FALSE,
-    #                                           obsWeights = NULL,
-    #                                           control = list(initWeightAlg = "survSL.rfsrc"))
-    # oracle prediction, as well as nuisance predictions
-    f_hat <- survSuperLearner:::predict.survSuperLearner(fit,
-                                                         newdata = X_holdout,
-                                                         new.times = landmark_times)$event.SL.predict
-    nuis_preds <- survSuperLearner:::predict.survSuperLearner(fit,
-                                                              newdata = X_holdout,
-                                                              new.times = approx_times)
-    # nuis_preds_reverse <- survSuperLearner:::predict.survSuperLearner(reverse_fit,
-    #                                                           newdata = X,
-    #                                                           new.times = approx_times)
-    S_hat <- nuis_preds$event.SL.predict
-    G_hat <- nuis_preds$cens.SL.predict
-    # S_hat_reverse <- nuis_preds_reverse$cens.SL.predict
-    # G_hat_reverse <- nuis_preds_reverse$event.SL.predict
-    fit_reduced <- survSuperLearner::survSuperLearner(time = time,
-                                                      event = event,
-                                                      X = X_reduced,
-                                                      newX = X_reduced,
-                                                      new.times = c(1),
-                                                      event.SL.library = event.SL.library,
-                                                      cens.SL.library = cens.SL.library,
-                                                      verbose = FALSE,
-                                                      obsWeights = NULL,
-                                                      control = list(initWeightAlg = "survSL.rfsrc"))
-    # reduced oracle predictions
-    fs_hat <- survSuperLearner:::predict.survSuperLearner(fit_reduced,
-                                                          newdata = X_reduced_holdout,
-                                                          new.times = landmark_times)$event.SL.predict
-  } else if (nuisance == "param_AFT"){
-    df_full <- data.frame(time = time,
-                          event = event,
-                          X)
-    df_reduced <- data.frame(time = time,
-                             event = event,
-                             X_reduced)
-    event_fit <- survival::survreg(survival::Surv(time, event) ~ ., data = df_full,
-                                   dist = "lognormal")
-    cens_fit <- survival::survreg(survival::Surv(time, 1-event) ~ ., data = df_full,
-                                  dist = "lognormal")
-    event_fit_reduced <- survival::survreg(survival::Surv(time, event) ~ ., data = df_reduced,
-                                           dist = "lognormal")
-    event_q_pred <- predict(event_fit,
-                            newdata = X_holdout,
-                            type = 'quantile', p = seq(0, .999, by=.001))
-    cens_q_pred <- predict(cens_fit,
-                           newdata = X_holdout,
-                           type = 'quantile', p = seq(0, .999, by=.001))
-    event_q_pred_reduced <- predict(event_fit_reduced,
-                                    newdata = X_reduced_holdout,
-                                    type = 'quantile', p = seq(0, .999, by=.001))
-    # this is here to handle exact 0 times - see survSuperLearner code
-    pos.pred <- rep(1, nrow(X))
-    f_hat <- try(t(sapply(1:nrow(event_q_pred), function(j) {
-      pos.pred[j] * (1-stats::approx(event_q_pred[j,], seq(0, .999, by=.001),
-                                     xout = landmark_times,
-                                     method = 'linear',
-                                     rule = 2)$y)
-    })), silent = TRUE)
-    fs_hat <- try(t(sapply(1:nrow(event_q_pred_reduced), function(j) {
-      pos.pred[j] * (1-stats::approx(event_q_pred_reduced[j,], seq(0, .999, by=.001),
-                                     xout = landmark_times,
-                                     method = 'linear',
-                                     rule = 2)$y)
-    })), silent = TRUE)
-    S_hat <- try(t(sapply(1:nrow(event_q_pred), function(j) {
-      pos.pred[j] * (1-stats::approx(event_q_pred[j,], seq(0, .999, by=.001),
-                                     xout = approx_times,
-                                     method = 'linear',
-                                     rule = 2)$y)
-    })), silent = TRUE)
-    G_hat <- try(t(sapply(1:nrow(cens_q_pred), function(j) {
-      pos.pred[j] * (1-stats::approx(cens_q_pred[j,], seq(0, .999, by=.001),
-                                     xout = approx_times,
-                                     method = 'linear',
-                                     rule = 2)$y)
-    })), silent = TRUE)
-  }
 
   time <- time_holdout
   event <- event_holdout
