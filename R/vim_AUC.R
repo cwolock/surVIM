@@ -10,16 +10,11 @@ vim_brier <- function(time,
                       G_hat,
                       holdout){
 
-  # NOTE: Ted's function breaks with just a single covariate
-  # also there are weird namespace issues with predict method
-  # also why is new.times a mandatory argument
-  # currently we assume approx_times include landmark times
   dimension <- 4
   time_holdout <- holdout$y
   event_holdout <- holdout$delta
   X_holdout <-holdout[,1:dimension]
   X_reduced_holdout <- holdout[,2:dimension]
-
 
   time <- time_holdout
   event <- event_holdout
@@ -38,24 +33,43 @@ vim_brier <- function(time,
   G_hat_Y <- sapply(1:n, function(i) stepfun(approx_times, c(1,G_hat[i,]), right = TRUE)(time[i]))
   # places to hold the value of the influence function, as well as the actual estimate
   #IF.vals <- matrix(NA, nrow=n, ncol=length(landmark_times))
-  brier <- rep(NA, length(landmark_times))
-  brier_old <- rep(NA, length(landmark_times))
-  brier_plug <- rep(NA, length(landmark_times))
-  brier_plug_old <- rep(NA, length(landmark_times))
+  AUC <- rep(NA, length(landmark_times))
+  AUC_plug <- rep(NA, length(landmark_times))
   S_t <- rep(NA, length(landmark_times))
   G_t <- rep(NA, length(landmark_times))
   var_est <- rep(NA, length(landmark_times))
   for(i in 1:length(landmark_times)) {
     t0 <- landmark_times[i]
     k <- min(which(approx_times >= t0))
-    #F_hat_k <- 1-S_hat[,k]
     S_hat_k <- S_hat[,k]
     G_hat_k <- G_hat[,k]
-    f_hat_k <- f_hat[,i]
+    f_hat_k <- 1- f_hat[,i] # oracle is CDF, not survival
     #fs_hat_k <- fs_hat[,i]
     inner.func.1 <- ifelse(time <= t0 & event == 1, 1/(S_hat_Y * G_hat_Y), 0 )
     inner.func.2 <- int.vals[,k]
     KM.if <- -S_hat_k * ( inner.func.1 - inner.func.2)
+
+    calc_phi_01 <- function(j){
+      fx <- f_hat_k[j]
+      varphi_x <- KM.if[j]
+      int <- mean(ifelse(f_hat_k >= fx, 1, 0) * (1 - S_hat_k) - ifelse(f_hat_k < fx, 1, 0) * S_hat_k)
+      return(varphi_x * int)
+    }
+
+    calc_phi_tilde_01 <- function(j){
+      fx <- f_hat_k[j]
+      Sx <- S_hat_k[j]
+      int <- mean(ifelse(f_hat_k >= fx, 1, 0) * (1 - S_hat_k) * S_x - ifelse(f_hat_k < fx, 1, 0) * S_hat_k * (1 - Sx))
+      return(int)
+    }
+
+    phi_01 <- unlist(lapply(1:nrow(X_holdout),
+                            FUN = calc_phi_01))
+
+    phi_tilde_01_uncentered <- unlist(lapply(1:nrow(X_holdout),
+                            FUN = calc_phi_tilde_01))
+
+    phi_tilde_01 <- phi_tilde_01_uncentered - 2*mean(phi_tilde_01)
 
     # should phi_0 and phi_0s be negative or positive...
     # phi0_old <- 2 * KM.if * (f_hat_k - S_hat_k)
