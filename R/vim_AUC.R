@@ -1,4 +1,4 @@
-vim_brier <- function(time,
+vim_AUC <- function(time,
                       event,
                       X,
                       X_reduced,
@@ -13,8 +13,8 @@ vim_brier <- function(time,
   dimension <- 4
   time_holdout <- holdout$y
   event_holdout <- holdout$delta
-  X_holdout <-holdout[,1:dimension]
-  X_reduced_holdout <- holdout[,2:dimension]
+  X_holdout <-holdout[,1:2]
+  X_reduced_holdout <- holdout[,2:2]
 
   time <- time_holdout
   event <- event_holdout
@@ -33,10 +33,8 @@ vim_brier <- function(time,
   G_hat_Y <- sapply(1:n, function(i) stepfun(approx_times, c(1,G_hat[i,]), right = TRUE)(time[i]))
   # places to hold the value of the influence function, as well as the actual estimate
   #IF.vals <- matrix(NA, nrow=n, ncol=length(landmark_times))
-  AUC <- rep(NA, length(landmark_times))
-  AUC_plug <- rep(NA, length(landmark_times))
-  S_t <- rep(NA, length(landmark_times))
-  G_t <- rep(NA, length(landmark_times))
+  one_step <- rep(NA, length(landmark_times))
+  plug_in <- rep(NA, length(landmark_times))
   var_est <- rep(NA, length(landmark_times))
   for(i in 1:length(landmark_times)) {
     t0 <- landmark_times[i]
@@ -59,7 +57,7 @@ vim_brier <- function(time,
     calc_phi_tilde_01 <- function(j){
       fx <- f_hat_k[j]
       Sx <- S_hat_k[j]
-      int <- mean(ifelse(f_hat_k >= fx, 1, 0) * (1 - S_hat_k) * S_x - ifelse(f_hat_k < fx, 1, 0) * S_hat_k * (1 - Sx))
+      int <- mean(ifelse(f_hat_k >= fx, 1, 0) * (1 - S_hat_k) * Sx + ifelse(f_hat_k < fx, 1, 0) * S_hat_k * (1 - Sx))
       return(int)
     }
 
@@ -69,49 +67,18 @@ vim_brier <- function(time,
     phi_tilde_01_uncentered <- unlist(lapply(1:nrow(X_holdout),
                             FUN = calc_phi_tilde_01))
 
-    phi_tilde_01 <- phi_tilde_01_uncentered - 2*mean(phi_tilde_01)
+    phi_tilde_01 <- phi_tilde_01_uncentered - mean(phi_tilde_01_uncentered)
 
-    # should phi_0 and phi_0s be negative or positive...
-    # phi0_old <- 2 * KM.if * (f_hat_k - S_hat_k)
-    # phi_tilde_0_old <- -(f_hat_k - S_hat_k)^2 - mean(-(f_hat_k - S_hat_k)^2)
-    #
-    # phi0s_old <- 2 * KM.if * (fs_hat_k - S_hat_k)
-    # phi_tilde_0s_old <- -(fs_hat_k - S_hat_k)^2 - mean(-(fs_hat_k - S_hat_k)^2)
+    if.func <- phi_01 + phi_tilde_01
 
-    phi0 <- 2*f_hat_k*KM.if - KM.if
-    phi_tilde_0 <- 2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k - mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k)
-    # phi0s <- 2*fs_hat_k*KM.if - KM.if
-    # phi_tilde_0s <- 2*fs_hat_k*S_hat_k - fs_hat_k^2 - S_hat_k
+    plug_in[i] <- mean(phi_tilde_01_uncentered)
+    one_step[i] <- mean(phi_tilde_01_uncentered) + mean(if.func)
 
-    # eta0 <- -mean(S_hat_k*(1 - S_hat_k))
-    # eta0_if_tilde <- -S_hat_k*(1 - S_hat_k) - mean(-S_hat_k*(1 - S_hat_k))
-    # eta0_if <- -KM.if + 2*KM.if*S_hat_k
-
-    if.func <- phi0 + phi_tilde_0# - phi0s - phi_tilde_0s
-    # if.func_old <- phi0_old + phi_tilde_0_old - phi0s_old - phi_tilde_0s_old
-    # if.func_eta <- eta0_if_tilde + eta0_if
-    # mu <- mean(if.func)
-    # sigma <- sd(if.func)
-    # if.func.z <- (if.func-mu)/sigma
-    # if.func <- if.func[if.func.z > -4 & if.func.z < 4]
-    # print(sum(if.func.z < -5 | if.func.z > 5)/length(if.func.z)*100)
-
-    brier[i] <- mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k) + mean(if.func) #-
-      #mean(2*fs_hat_k*S_hat_k - fs_hat_k^2 - S_hat_k)
-    brier_plug[i] <- mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k)# -
-      #mean(2*fs_hat_k*S_hat_k - fs_hat_k^2 - S_hat_k)
-    # brier_old[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2) + mean(if.func_old)
-    # brier_plug_old[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2)
-    #IF.vals[,i] <- if.func
-    S_t[i] <- mean(S_hat_k)
-    G_t[i] <- mean(G_hat_k)
-    var_est[i] <- mean(if.func^2)#var(if.func)
+    var_est[i] <- mean(if.func^2)
   }
 
   return(data.frame(t = landmark_times,
-                    brier = brier,
-                    brier_plug = brier_plug,
-                    S_t = S_t,
-                    G_t = G_t,
+                    one_step = one_step,
+                    plug_in = plug_in,
                     var_est = var_est))
 }

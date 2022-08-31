@@ -13,7 +13,6 @@ vim_brier <- function(time,
   # NOTE: Ted's function breaks with just a single covariate
   # also there are weird namespace issues with predict method
   # also why is new.times a mandatory argument
-  # currently we assume approx_times include landmark times
   dimension <- 4
   time_holdout <- holdout$y
   event_holdout <- holdout$delta
@@ -37,18 +36,13 @@ vim_brier <- function(time,
   S_hat_Y <- sapply(1:n, function(i) stepfun(approx_times, c(1,S_hat[i,]), right = FALSE)(time[i]))
   G_hat_Y <- sapply(1:n, function(i) stepfun(approx_times, c(1,G_hat[i,]), right = TRUE)(time[i]))
   # places to hold the value of the influence function, as well as the actual estimate
-  #IF.vals <- matrix(NA, nrow=n, ncol=length(landmark_times))
-  brier <- rep(NA, length(landmark_times))
-  brier_old <- rep(NA, length(landmark_times))
-  brier_plug <- rep(NA, length(landmark_times))
-  brier_plug_old <- rep(NA, length(landmark_times))
-  S_t <- rep(NA, length(landmark_times))
-  G_t <- rep(NA, length(landmark_times))
+  one_step <- rep(NA, length(landmark_times))
+  plug_in <- rep(NA, length(landmark_times))
   var_est <- rep(NA, length(landmark_times))
+
   for(i in 1:length(landmark_times)) {
     t0 <- landmark_times[i]
     k <- min(which(approx_times >= t0))
-    #F_hat_k <- 1-S_hat[,k]
     S_hat_k <- S_hat[,k]
     G_hat_k <- G_hat[,k]
     f_hat_k <- f_hat[,i]
@@ -82,22 +76,19 @@ vim_brier <- function(time,
     # if.func <- if.func[if.func.z > -4 & if.func.z < 4]
     # print(sum(if.func.z < -5 | if.func.z > 5)/length(if.func.z)*100)
 
-    brier[i] <- mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k) + mean(if.func) #-
-      #mean(2*fs_hat_k*S_hat_k - fs_hat_k^2 - S_hat_k)
-    brier_plug[i] <- mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k)# -
-      #mean(2*fs_hat_k*S_hat_k - fs_hat_k^2 - S_hat_k)
+    one_step[i] <- mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k) + mean(if.func)
+    plug_in[i] <- mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k)
+    plug_in2 <- mean(2*f_hat_k^2 - f_hat_k^2 - f_hat_k)
+    print(plug_in)
+    print(plug_in2)
     # brier_old[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2) + mean(if.func_old)
     # brier_plug_old[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2)
     #IF.vals[,i] <- if.func
-    S_t[i] <- mean(S_hat_k)
-    G_t[i] <- mean(G_hat_k)
     var_est[i] <- mean(if.func^2)#var(if.func)
   }
 
   return(data.frame(t = landmark_times,
-                    brier = brier,
-                    brier_plug = brier_plug,
-                    S_t = S_t,
-                    G_t = G_t,
+                    one_step = one_step,
+                    plug_in = plug_in,
                     var_est = var_est))
 }

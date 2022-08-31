@@ -13,8 +13,8 @@ vim_rmst <- function(time,
   dimension <- 4
   time_holdout <- holdout$y
   event_holdout <- holdout$delta
-  X_holdout <-holdout[,1:dimension]
-  X_reduced_holdout <- holdout[,2:dimension]
+  X_holdout <-holdout[,1:2]
+  X_reduced_holdout <- holdout[,2:2]
 
 
   time <- time_holdout
@@ -57,21 +57,15 @@ vim_rmst <- function(time,
     t_wedge <- t_wedge[-1]
 
     calc_phi_01 <- function(i){
-      (rep(f_k[i], length(approx_times)-1) - t_wedge)^2 * diff(KM_ifs[i,])
+      sum(-(rep(f_k[i], length(approx_times)-1) - t_wedge)^2 * diff(KM_ifs[i,]))
     }
 
-    phi_01 <- matrix(unlist(lapply(1:n, FUN = calc_phi_01)),
-                     nrow = n)
-
-    phi_01 <- rowSums(phi_01)
+    phi_01 <- unlist(lapply(1:n, FUN = calc_phi_01))
 
     calc_phi_tilde_01 <- function(i){
-      (rep(f_k[i], length(approx_times)-1) - t_wedge)^2 * diff(S_hat[i,])
+      sum(-(rep(f_k[i], length(approx_times)-1) - t_wedge)^2 * diff(S_hat[i,]))
     }
-
-    phi_tilde_01 <- matrix(unlist(lapply(1:n, FUN = calc_phi_tilde_01)),
-                           nrow = n)
-    phi_tilde_01 <- rowSums(phi_tilde_01)
+    phi_tilde_01 <- unlist(lapply(1:n, FUN = calc_phi_tilde_01))
 
     plug_in <- mean(phi_tilde_01)
 
