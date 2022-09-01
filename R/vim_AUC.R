@@ -96,7 +96,7 @@ vim_AUC <- function(time,
     # plug_in[i] <- mean(phi_tilde_01_uncentered)
     # one_step[i] <- mean(phi_tilde_01_uncentered) + mean(if.func)
 
-    if.func <- (phi_01 + phi_tilde_01)/V_2 - V_1*(phi_01 + phi_tilde_01)/(V_2^2)
+    if.func <- (phi_01 + phi_tilde_01)/V_2 - V_1*(phi_02 + phi_tilde_02)/(V_2^2)
     plug_in[i] <- V_1/V_2
     one_step[i] <- V_1/V_2 + mean(if.func)
 
