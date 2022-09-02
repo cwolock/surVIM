@@ -13,8 +13,8 @@ vim_AUC <- function(time,
   dimension <- 5
   time_holdout <- holdout$y
   event_holdout <- holdout$delta
-  X_holdout <-holdout[,1:2]
-  X_reduced_holdout <- holdout[,2:2]
+  X_holdout <-holdout[,1:dimension]
+  X_reduced_holdout <- holdout[,2:dimension]
 
   time <- time_holdout
   event <- event_holdout
