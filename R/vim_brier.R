@@ -13,7 +13,7 @@ vim_brier <- function(time,
   # NOTE: Ted's function breaks with just a single covariate
   # also there are weird namespace issues with predict method
   # also why is new.times a mandatory argument
-  dimension <- 4
+  dimension <- 5
   time_holdout <- holdout$y
   event_holdout <- holdout$delta
   X_holdout <-holdout[,1:dimension]
