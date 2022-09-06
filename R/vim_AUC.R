@@ -33,9 +33,12 @@ vim_AUC <- function(time,
   G_hat_Y <- sapply(1:n, function(i) stepfun(approx_times, c(1,G_hat[i,]), right = TRUE)(time[i]))
   # places to hold the value of the influence function, as well as the actual estimate
   #IF.vals <- matrix(NA, nrow=n, ncol=length(landmark_times))
-  one_step <- rep(NA, length(landmark_times))
-  plug_in <- rep(NA, length(landmark_times))
-  var_est <- rep(NA, length(landmark_times))
+  top_one_step <- rep(NA, length(landmark_times))
+  top_plug_in <- rep(NA, length(landmark_times))
+  top_var_est <- rep(NA, length(landmark_times))
+  bottom_one_step <- rep(NA, length(landmark_times))
+  bottom_plug_in <- rep(NA, length(landmark_times))
+  bottom_var_est <- rep(NA, length(landmark_times))
   for(i in 1:length(landmark_times)) {
     t0 <- landmark_times[i]
     k <- min(which(approx_times >= t0))
@@ -51,14 +54,13 @@ vim_AUC <- function(time,
       fx <- f_hat_k[j]
       varphi_x <- KM.if[j]
       int <- mean(ifelse(f_hat_k > fx, 1, 0) * (1 - S_hat_k) - ifelse(f_hat_k < fx, 1, 0) * S_hat_k)
-      return(varphi_x * int)
+      return(varphi_x*int)
     }
 
     calc_phi_tilde_01 <- function(j){
       fx <- f_hat_k[j]
       Sx <- S_hat_k[j]
-      int <- mean(ifelse(f_hat_k > fx, 1, 0) * (1 - S_hat_k) * Sx + ifelse(f_hat_k < fx, 1, 0) * S_hat_k * (1 - Sx))# +
-                   # 0.5*ifelse(f_hat_k == fx, 1, 0))
+      int <- mean(ifelse(f_hat_k > fx, 1, 0) * (1 - S_hat_k) * Sx + ifelse(f_hat_k < fx, 1, 0) * S_hat_k * (1 - Sx))
       return(int)
     }
 
@@ -96,17 +98,24 @@ vim_AUC <- function(time,
     # if.func <- (phi_01 + phi_tilde_01)
     # plug_in[i] <- mean(phi_tilde_01_uncentered)
     # one_step[i] <- mean(phi_tilde_01_uncentered) + mean(if.func)
-
-    if.func <- (phi_01 + phi_tilde_01)/V_2 - V_1*(phi_02 + phi_tilde_02)/(V_2^2)
-    plug_in[i] <- V_1/V_2
-    one_step[i] <- V_1/V_2 + mean(if.func)
-
-
-    var_est[i] <- mean(if.func^2)
+    top_plug_in[i] <- V_1
+    top_one_step[i] <- V_1 + mean(phi_01 + phi_tilde_01)
+    top_var_est[i] <- mean((phi_01 + phi_tilde_01)^2)
+    bottom_plug_in[i] <- V_2
+    bottom_one_step[i] <- V_2 + mean(phi_02 + phi_tilde_02)
+    bottom_var_est[i] <- mean((phi_02 + phi_tilde_02)^2)
+    # if.func <- (phi_01 + phi_tilde_01)/V_2 - V_1/(V_2^2)*(phi_02 + phi_tilde_02)
+    # plug_in[i] <- V_1/V_2
+    # one_step[i] <- V_1/V_2 + mean(if.func)
+    #
+    # var_est[i] <- mean(if.func^2)
   }
 
   return(data.frame(t = landmark_times,
-                    one_step = one_step,
-                    plug_in = plug_in,
-                    var_est = var_est))
+                    top_one_step = top_one_step,
+                    top_plug_in = top_plug_in,
+                    top_var_est = top_var_est,
+                    bottom_one_step = bottom_one_step,
+                    bottom_plug_in = bottom_plug_in,
+                    bottom_var_est = bottom_var_est))
 }

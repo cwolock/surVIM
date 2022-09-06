@@ -78,9 +78,6 @@ vim_brier <- function(time,
 
     one_step[i] <- mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k) + mean(if.func)
     plug_in[i] <- mean(2*f_hat_k*S_hat_k - f_hat_k^2 - S_hat_k)
-    plug_in2 <- mean(2*f_hat_k^2 - f_hat_k^2 - f_hat_k)
-    print(plug_in)
-    print(plug_in2)
     # brier_old[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2) + mean(if.func_old)
     # brier_plug_old[i] <- mean(-(f_hat_k - S_hat_k)^2) - mean(-(fs_hat_k - S_hat_k)^2)
     #IF.vals[,i] <- if.func
