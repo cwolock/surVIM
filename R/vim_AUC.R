@@ -53,6 +53,7 @@ vim_AUC <- function(time,
     calc_phi_01 <- function(j){
       fx <- f_hat_k[j]
       varphi_x <- KM.if[j]
+      int_vals <- ifelse(f_hat_k > fx, 1, 0) * (1 - S_hat_k) - ifelse(f_hat_k < fx, 1, 0) * S_hat_k
       int <- mean(ifelse(f_hat_k > fx, 1, 0) * (1 - S_hat_k) - ifelse(f_hat_k < fx, 1, 0) * S_hat_k)
       return(varphi_x*int)
     }
@@ -60,6 +61,7 @@ vim_AUC <- function(time,
     calc_phi_tilde_01 <- function(j){
       fx <- f_hat_k[j]
       Sx <- S_hat_k[j]
+      int_vals <- ifelse(f_hat_k > fx, 1, 0) * (1 - S_hat_k) * Sx + ifelse(f_hat_k < fx, 1, 0) * S_hat_k * (1 - Sx)
       int <- mean(ifelse(f_hat_k > fx, 1, 0) * (1 - S_hat_k) * Sx + ifelse(f_hat_k < fx, 1, 0) * S_hat_k * (1 - Sx))
       return(int)
     }
@@ -90,6 +92,12 @@ vim_AUC <- function(time,
     phi_tilde_02_uncentered <- unlist(lapply(1:nrow(X_holdout),
                                              FUN = calc_phi_tilde_02))
 
+    theta_0 <- mean(S_hat_k)
+    V_2_new <- theta_0 * (1 - theta_0)
+    phi_tilde_02_new <- S_hat_k - theta_0 - 2*theta_0*S_hat_k + 2*theta_0^2
+    phi_02_new <- KM.if * (1 - 2*theta_0)
+
+
     phi_tilde_02 <- phi_tilde_02_uncentered - mean(phi_tilde_02_uncentered)
 
     V_1 <- mean(phi_tilde_01_uncentered)
@@ -101,9 +109,9 @@ vim_AUC <- function(time,
     top_plug_in[i] <- V_1
     top_one_step[i] <- V_1 + mean(phi_01 + phi_tilde_01)
     top_var_est[i] <- mean((phi_01 + phi_tilde_01)^2)
-    bottom_plug_in[i] <- V_2
-    bottom_one_step[i] <- V_2 + mean(phi_02 + phi_tilde_02)
-    bottom_var_est[i] <- mean((phi_02 + phi_tilde_02)^2)
+    bottom_plug_in[i] <- V_2_new#V_2
+    bottom_one_step[i] <- V_2_new + mean(phi_tilde_02_new + phi_02_new)#V_2 + mean(phi_02 + phi_tilde_02)
+    bottom_var_est[i] <- mean((phi_02_new + phi_tilde_02_new)^2)
     # if.func <- (phi_01 + phi_tilde_01)/V_2 - V_1/(V_2^2)*(phi_02 + phi_tilde_02)
     # plug_in[i] <- V_1/V_2
     # one_step[i] <- V_1/V_2 + mean(if.func)
