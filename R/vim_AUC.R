@@ -100,8 +100,8 @@ vim_AUC <- function(time,
 
     phi_tilde_02 <- phi_tilde_02_uncentered - mean(phi_tilde_02_uncentered)
 
-    V_1 <- mean(phi_tilde_01_uncentered)
-    V_2 <- mean(phi_tilde_02_uncentered)
+    V_1 <- mean(phi_tilde_01_uncentered)/2
+    V_2 <- mean(phi_tilde_02_uncentered)/2
 
     # if.func <- (phi_01 + phi_tilde_01)
     # plug_in[i] <- mean(phi_tilde_01_uncentered)
@@ -109,9 +109,9 @@ vim_AUC <- function(time,
     top_plug_in[i] <- V_1
     top_one_step[i] <- V_1 + mean(phi_01 + phi_tilde_01)
     top_var_est[i] <- mean((phi_01 + phi_tilde_01)^2)
-    bottom_plug_in[i] <- V_2_new#V_2
-    bottom_one_step[i] <- V_2_new + mean(phi_tilde_02_new + phi_02_new)#V_2 + mean(phi_02 + phi_tilde_02)
-    bottom_var_est[i] <- mean((phi_02_new + phi_tilde_02_new)^2)
+    bottom_plug_in[i] <- V_2
+    bottom_one_step[i] <- V_2 + mean(phi_02 + phi_tilde_02)
+    bottom_var_est[i] <- mean((phi_02 + phi_tilde_02)^2)
     # if.func <- (phi_01 + phi_tilde_01)/V_2 - V_1/(V_2^2)*(phi_02 + phi_tilde_02)
     # plug_in[i] <- V_1/V_2
     # one_step[i] <- V_1/V_2 + mean(if.func)
