@@ -5,7 +5,8 @@ vim_AUC <- function(time,
                     f_hat,
                     fs_hat,
                     S_hat,
-                    G_hat){
+                    G_hat,
+                    folds){
 
   # time <- holdout$y
   # event <- holdout$delta

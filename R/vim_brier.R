@@ -5,7 +5,8 @@ vim_brier <- function(time,
                       f_hat,
                       fs_hat,
                       S_hat,
-                      G_hat){
+                      G_hat,
+                      folds){
 
   one_step <- rep(NA, length(landmark_times))
   plug_in <- rep(NA, length(landmark_times))
