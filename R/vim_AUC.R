@@ -65,7 +65,7 @@ vim_AUC <- function(time,
       plug_in[i] <- mean(split_plug_in_fulls[ss_folds == 1]) - mean(split_plug_in_reduceds[ss_folds == 2])
       full[i] <- mean(split_one_step_fulls[ss_folds == 1])
       reduced[i] <- mean(split_one_step_reduceds[ss_folds == 2])
-      var_est[i] <- mean(split_var_est_fulls[ss_folds == 1]) + mean(split_var_est_fulls[ss_folds == 2])
+      var_est[i] <- mean(split_var_est_fulls[ss_folds == 1]) + mean(split_var_est_reduceds[ss_folds == 2])
     } else{
       one_step[i] <- mean(CV_one_steps)
       plug_in[i] <- mean(CV_plug_ins)
