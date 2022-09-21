@@ -39,9 +39,9 @@ estimate_cindex <- function(time,
   S_hat_k <- S_hat[,approx_times <= tau]
   KM_ifs_k <- KM_ifs[,approx_times <= tau]
 
-  calc_phi_01 <- function(i){
-    fx <- preds[i]
-    varphi_x <- KM_ifs_k[i,]
+  calc_phi_01 <- function(j){
+    fx <- preds[j]
+    varphi_x <- KM_ifs_k[j,]
     int <- -mean(ifelse(fx > preds, 1, 0) * rowSums(S_hat_k[,-1] * diff(varphi_x)) +
                    ifelse(preds > fx, 1, 0) *  rowSums(varphi_x[-1] * t(diff(t(S_hat_k)))))
     return(int)
@@ -49,9 +49,9 @@ estimate_cindex <- function(time,
 
   phi_01 <- unlist(lapply(1:n, FUN = calc_phi_01))
 
-  calc_phi_tilde_01 <- function(i){
-    fx <- preds[i]
-    Sx <- S_hat_k[i,]
+  calc_phi_tilde_01 <- function(j){
+    fx <- preds[j]
+    Sx <- S_hat_k[j,]
     int <- -mean(ifelse(fx > preds, 1, 0) * rowSums(S_hat_k[,-1] * diff(Sx)) +
                    ifelse(preds > fx, 1, 0) *  rowSums(Sx[-1] * t(diff(t(S_hat_k)))))
     return(int)
