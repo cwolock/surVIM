@@ -37,28 +37,43 @@ estimate_cindex <- function(time,
   approx_times_k <- approx_times[approx_times <= tau]
   approx_times_k <- approx_times_k[-1]
   S_hat_k <- S_hat[,approx_times <= tau]
+  #G_hat_k <- G_hat[,approx_times <= tau]
   KM_ifs_k <- KM_ifs[,approx_times <= tau]
 
   calc_phi_01 <- function(j){
     fx <- preds[j]
     varphi_x <- KM_ifs_k[j,]
-    int <- -mean(ifelse(fx > preds, 1, 0) * rowSums(S_hat_k[,-1] * diff(varphi_x)) +
-                   ifelse(preds > fx, 1, 0) *  rowSums(varphi_x[-1] * t(diff(t(S_hat_k)))))
+    exceed_probs <- -rowSums(sweep(S_hat_k[,-1], MARGIN=2, diff(varphi_x), `*`))
+    # int <- -mean(ifelse(fx > preds, 1, 0) * rowSums(S_hat_k[,-1] * diff(varphi_x)) +
+    #                ifelse(preds > fx, 1, 0) *  rowSums(varphi_x[-1] * t(diff(t(S_hat_k)))))
+    int <- mean(ifelse(fx > preds, 1, 0) * exceed_probs - ifelse(preds > fx, 1, 0) * exceed_probs)
     return(int)
   }
 
   phi_01 <- unlist(lapply(1:n, FUN = calc_phi_01))
 
   calc_phi_tilde_01 <- function(j){
+    #tx <- time[j]
+    #deltax <- event[j]
+    #l <- min(which(approx_times >= tx))
+    #wx <- G_hat_k[j,l]
     fx <- preds[j]
     Sx <- S_hat_k[j,]
-    int <- -mean(ifelse(fx > preds, 1, 0) * rowSums(S_hat_k[,-1] * diff(Sx)) +
-                   ifelse(preds > fx, 1, 0) *  rowSums(Sx[-1] * t(diff(t(S_hat_k)))))
+    # int1 <- mean(ifelse(fx > preds & tx < time, 1, 0) * deltax / (wx * G_hat_k[,l]))
+    # int2 <- mean(ifelse(tx < time, 1, 0) * deltax / (wx * G_hat_k[,l]))# * rowSums(S_hat_k[,-1] * diff(Sx))) #+
+    #                #ifelse(preds > fx, 1, 0) *  rowSums(Sx[-1] * t(diff(t(S_hat_k)))))
+    exceed_probs <- -rowSums(sweep(S_hat_k[,-1], MARGIN=2, diff(Sx), `*`))
+    #exceed_probs <-  -rowSums(S_hat_k[,-1] * diff(Sx))
+    int <- mean(ifelse(fx > preds, 1, 0) * exceed_probs + ifelse(preds > fx, 1, 0) * (1 - exceed_probs))#-rowSums(Sx[-1] * t(diff(t(S_hat_k)))))
+    # -rowSums(S_hat_k[,-1] * diff(Sx))
+    # -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, Sx[-1], `*`))
+    # -rowSums(Sx[-1] * t(diff(t(S_hat_k))))
     return(int)
   }
+
   phi_tilde_01 <- unlist(lapply(1:n, FUN = calc_phi_tilde_01))
 
-  plug_in <- mean(phi_tilde_01)
+  plug_in <- mean(phi_tilde_01)#/mean(phi_tilde_01_b)
   # UnoC(Surv(time, event), Surv(dtest$time, dtest$event), lpnew = preds)
 
   phi_tilde_01 <- phi_tilde_01 - plug_in

@@ -30,24 +30,24 @@ vim_cindex <- function(time,
                            preds = f_hat[[j]],
                            S_hat = S_hat[[j]],
                            G_hat = G_hat[[j]])
-    V_0s <- estimate_cindex(time = time_holdout,
-                            event = event_holdout,
-                            approx_times = approx_times,
-                            tau = tau,
-                            preds = fs_hat[[j]],
-                            S_hat = S_hat[[j]],
-                            G_hat = G_hat[[j]])
+    V_0s <- 0#estimate_cindex(time = time_holdout,
+                            # event = event_holdout,
+                            # approx_times = approx_times,
+                            # tau = tau,
+                            # preds = fs_hat[[j]],
+                            # S_hat = S_hat[[j]],
+                            # G_hat = G_hat[[j]])
     CV_fulls[j] <- V_0$one_step
-    CV_reduceds[j] <- V_0s$one_step
-    CV_one_steps[j] <-  V_0$one_step -V_0s$one_step
-    CV_plug_ins[j] <-  V_0$plug_in -V_0s$plug_in
-    split_one_step_fulls[j] <- V_0$one_step
-    split_plug_in_fulls[j] <- V_0$plug_in
-    split_one_step_reduceds[j] <- V_0s$one_step
-    split_plug_in_reduceds[j] <- V_0s$plug_in
-    split_var_est_fulls[j] <- mean(V_0$if_func^2)
-    split_var_est_reduceds[j] <- mean(V_0s$if_func^2)
-    if_func <- V_0$if_func - V_0s$if_func
+    CV_reduceds[j] <- V_0s#$one_step
+    CV_one_steps[j] <-  V_0$one_step# -V_0s$one_step
+    CV_plug_ins[j] <-  V_0$plug_in #-V_0s$plug_in
+    # split_one_step_fulls[j] <- V_0$one_step
+    # split_plug_in_fulls[j] <- V_0$plug_in
+    # split_one_step_reduceds[j] <- V_0s$one_step
+    # split_plug_in_reduceds[j] <- V_0s$plug_in
+    # split_var_est_fulls[j] <- mean(V_0$if_func^2)
+    # split_var_est_reduceds[j] <- mean(V_0s$if_func^2)
+    if_func <- V_0$if_func# - V_0s$if_func
     CV_var_ests[j] <- mean(if_func^2)
   }
 
