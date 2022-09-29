@@ -43,10 +43,12 @@ estimate_cindex <- function(time,
   calc_phi_01 <- function(j){
     fx <- preds[j]
     varphi_x <- KM_ifs_k[j,]
-    exceed_probs <- -rowSums(sweep(S_hat_k[,-1], MARGIN=2, diff(varphi_x), `*`))
+    exceed_probs1 <- -rowSums(sweep(S_hat_k[,-1], MARGIN=2, diff(varphi_x), `*`))
+    exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, varphi_x[-1], `*`))
     # int <- -mean(ifelse(fx > preds, 1, 0) * rowSums(S_hat_k[,-1] * diff(varphi_x)) +
     #                ifelse(preds > fx, 1, 0) *  rowSums(varphi_x[-1] * t(diff(t(S_hat_k)))))
-    int <- mean(ifelse(fx > preds, 1, 0) * exceed_probs - ifelse(preds > fx, 1, 0) * exceed_probs)
+    #int <- mean(ifelse(fx > preds, 1, 0) * exceed_probs - ifelse(preds > fx, 1, 0) * exceed_probs) # old version
+    int <- mean(ifelse(fx > preds, 1, 0) * exceed_probs1 + ifelse(preds > fx, 1, 0) * exceed_probs2)
     return(int)
   }
 
@@ -62,25 +64,63 @@ estimate_cindex <- function(time,
     # int1 <- mean(ifelse(fx > preds & tx < time, 1, 0) * deltax / (wx * G_hat_k[,l]))
     # int2 <- mean(ifelse(tx < time, 1, 0) * deltax / (wx * G_hat_k[,l]))# * rowSums(S_hat_k[,-1] * diff(Sx))) #+
     #                #ifelse(preds > fx, 1, 0) *  rowSums(Sx[-1] * t(diff(t(S_hat_k)))))
-    exceed_probs <- -rowSums(sweep(S_hat_k[,-1], MARGIN=2, diff(Sx), `*`))
+    exceed_probs1 <- -rowSums(sweep(S_hat_k[,-1], MARGIN=2, diff(Sx), `*`)) # old one, but doesn't properly account for tau
+    exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, Sx[-1], `*`))
     #exceed_probs <-  -rowSums(S_hat_k[,-1] * diff(Sx))
-    int <- mean(ifelse(fx > preds, 1, 0) * exceed_probs + ifelse(preds > fx, 1, 0) * (1 - exceed_probs))#-rowSums(Sx[-1] * t(diff(t(S_hat_k)))))
+    int <- mean(ifelse(fx > preds, 1, 0) * exceed_probs1 +
+                  ifelse(preds > fx, 1, 0) * exceed_probs2)#-rowSums(Sx[-1] * t(diff(t(S_hat_k)))))
     # -rowSums(S_hat_k[,-1] * diff(Sx))
     # -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, Sx[-1], `*`))
     # -rowSums(Sx[-1] * t(diff(t(S_hat_k))))
     return(int)
   }
 
-  phi_tilde_01 <- unlist(lapply(1:n, FUN = calc_phi_tilde_01))
+  phi_tilde_01_uncentered <- unlist(lapply(1:n, FUN = calc_phi_tilde_01))
 
-  plug_in <- mean(phi_tilde_01)#/mean(phi_tilde_01_b)
-  # UnoC(Surv(time, event), Surv(dtest$time, dtest$event), lpnew = preds)
+  calc_phi_02 <- function(j){
+    fx <- preds[j]
+    varphi_x <- KM_ifs_k[j,]
+    exceed_probs1 <- -rowSums(sweep(S_hat_k[,-1], MARGIN=2, diff(varphi_x), `*`))
+    exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, varphi_x[-1], `*`))
+    int <- mean(exceed_probs1 + exceed_probs2)
+    return(int)
+  }
 
-  phi_tilde_01 <- phi_tilde_01 - plug_in
+  phi_02 <- unlist(lapply(1:n, FUN = calc_phi_02))
 
-  if_func <- phi_01 + phi_tilde_01
+  calc_phi_tilde_02 <- function(j){
+    #tx <- time[j]
+    #deltax <- event[j]
+    #l <- min(which(approx_times >= tx))
+    #wx <- G_hat_k[j,l]
+    fx <- preds[j]
+    Sx <- S_hat_k[j,]
+    exceed_probs1 <- -rowSums(sweep(S_hat_k[,-1], MARGIN=2, diff(Sx), `*`)) # old one, but doesn't properly account for tau
+    exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, Sx[-1], `*`))
+    #exceed_probs <-  -rowSums(S_hat_k[,-1] * diff(Sx))
+    int <- mean(exceed_probs1 + exceed_probs2)#-rowSums(Sx[-1] * t(diff(t(S_hat_k)))))
+    return(int)
+  }
 
-  one_step <- plug_in + mean(if_func)
+  phi_tilde_02_uncentered <- unlist(lapply(1:n, FUN = calc_phi_tilde_02))
+
+
+  phi_tilde_01 <- phi_tilde_01_uncentered - mean(phi_tilde_01_uncentered)
+  phi_tilde_02 <- phi_tilde_02_uncentered - mean(phi_tilde_02_uncentered)
+  V_1 <- mean(phi_tilde_01_uncentered)
+  V_2 <- mean(phi_tilde_02_uncentered)
+  if_func <- (phi_01 + phi_tilde_01)/V_2 - V_1/(V_2^2)*(phi_02 + phi_tilde_02)
+  plug_in <- V_1/V_2
+  one_step <- V_1/V_2 + mean(if_func)
+
+  # plug_in <- mean(phi_tilde_01)#/mean(phi_tilde_01_b)
+  # # UnoC(Surv(time, event), Surv(dtest$time, dtest$event), lpnew = preds)
+  #
+  # phi_tilde_01 <- phi_tilde_01 - plug_in
+  #
+  # if_func <- phi_01 + phi_tilde_01
+  #
+  # one_step <- plug_in + mean(if_func)
 
   return(list(one_step = one_step,
               plug_in = plug_in,
