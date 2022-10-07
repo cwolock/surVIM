@@ -7,7 +7,8 @@ vim_accuracy <- function(time,
                          S_hat,
                          G_hat,
                          folds,
-                         sample_split){
+                         sample_split,
+                         ss_folds){
 
   one_step <- rep(NA, length(landmark_times))
   plug_in <- rep(NA, length(landmark_times))
@@ -59,12 +60,14 @@ vim_accuracy <- function(time,
     }
 
     if (sample_split){
-      ss_folds <- sample(rep(1:2, length = length(unique(folds))))
-      one_step[i] <- mean(split_one_step_fulls[ss_folds == 1]) - mean(split_one_step_reduceds[ss_folds == 2])
-      plug_in[i] <- mean(split_plug_in_fulls[ss_folds == 1]) - mean(split_plug_in_reduceds[ss_folds == 2])
-      full[i] <- mean(split_one_step_fulls[ss_folds == 1])
-      reduced[i] <- mean(split_one_step_reduceds[ss_folds == 2])
-      var_est[i] <- mean(split_var_est_fulls[ss_folds == 1]) + mean(split_var_est_reduceds[ss_folds == 2])
+      one_step[i] <- mean(split_one_step_fulls[sort(unique(folds[ss_folds == 0]))]) -
+        mean(split_one_step_reduceds[sort(unique(folds[ss_folds == 1]))])
+      plug_in[i] <- mean(split_plug_in_fulls[sort(unique(folds[ss_folds == 0]))]) -
+        mean(split_plug_in_reduceds[sort(unique(folds[ss_folds == 1]))])
+      full[i] <- mean(split_one_step_fulls[sort(unique(folds[ss_folds == 0]))])
+      reduced[i] <- mean(split_one_step_reduceds[sort(unique(folds[ss_folds == 1]))])
+      var_est[i] <- mean(split_var_est_fulls[sort(unique(folds[ss_folds == 0]))]) +
+        mean(split_var_est_reduceds[sort(unique(folds[ss_folds == 1]))])
     } else{
       one_step[i] <- mean(CV_one_steps)
       plug_in[i] <- mean(CV_plug_ins)

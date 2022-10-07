@@ -30,13 +30,13 @@ vim_cindex <- function(time,
                            preds = f_hat[[j]],
                            S_hat = S_hat[[j]],
                            G_hat = G_hat[[j]])
-    V_0s <- 0#estimate_cindex(time = time_holdout,
-                            # event = event_holdout,
-                            # approx_times = approx_times,
-                            # tau = tau,
-                            # preds = fs_hat[[j]],
-                            # S_hat = S_hat[[j]],
-                            # G_hat = G_hat[[j]])
+    V_0s <- estimate_cindex(time = time_holdout,
+                            event = event_holdout,
+                            approx_times = approx_times,
+                            tau = tau,
+                            preds = fs_hat[[j]],
+                            S_hat = S_hat[[j]],
+                            G_hat = G_hat[[j]])
     CV_fulls[j] <- V_0$one_step
     CV_reduceds[j] <- V_0s#$one_step
     CV_one_steps[j] <-  V_0$one_step# -V_0s$one_step
