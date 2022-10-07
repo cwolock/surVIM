@@ -38,9 +38,9 @@ vim_cindex <- function(time,
                             S_hat = S_hat[[j]],
                             G_hat = G_hat[[j]])
     CV_fulls[j] <- V_0$one_step
-    CV_reduceds[j] <- V_0s#$one_step
-    CV_one_steps[j] <-  V_0$one_step# -V_0s$one_step
-    CV_plug_ins[j] <-  V_0$plug_in #-V_0s$plug_in
+    CV_reduceds[j] <- V_0s$one_step
+    CV_one_steps[j] <-  V_0$one_step -V_0s$one_step
+    CV_plug_ins[j] <-  V_0$plug_in -V_0s$plug_in
     # split_one_step_fulls[j] <- V_0$one_step
     # split_plug_in_fulls[j] <- V_0$plug_in
     # split_one_step_reduceds[j] <- V_0s$one_step
