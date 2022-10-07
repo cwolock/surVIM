@@ -47,7 +47,7 @@ vim_cindex <- function(time,
     # split_plug_in_reduceds[j] <- V_0s$plug_in
     # split_var_est_fulls[j] <- mean(V_0$if_func^2)
     # split_var_est_reduceds[j] <- mean(V_0s$if_func^2)
-    if_func <- V_0$if_func# - V_0s$if_func
+    if_func <- V_0$if_func - V_0s$if_func
     CV_var_ests[j] <- mean(if_func^2)
   }
 
