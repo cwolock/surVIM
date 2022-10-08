@@ -78,7 +78,6 @@ estimate_cindex <- function(time,
   phi_tilde_01_uncentered <- unlist(lapply(1:n, FUN = calc_phi_tilde_01))
 
   calc_phi_02 <- function(j){
-    fx <- preds[j]
     varphi_x <- KM_ifs_k[j,]
     exceed_probs1 <- -rowSums(sweep(S_hat_k[,-1], MARGIN=2, diff(varphi_x), `*`))
     exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, varphi_x[-1], `*`))
@@ -93,7 +92,6 @@ estimate_cindex <- function(time,
     #deltax <- event[j]
     #l <- min(which(approx_times >= tx))
     #wx <- G_hat_k[j,l]
-    fx <- preds[j]
     Sx <- S_hat_k[j,]
     exceed_probs1 <- -rowSums(sweep(S_hat_k[,-1], MARGIN=2, diff(Sx), `*`)) # old one, but doesn't properly account for tau
     exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, Sx[-1], `*`))
@@ -107,8 +105,8 @@ estimate_cindex <- function(time,
 
   phi_tilde_01 <- phi_tilde_01_uncentered - mean(phi_tilde_01_uncentered)
   phi_tilde_02 <- phi_tilde_02_uncentered - mean(phi_tilde_02_uncentered)
-  V_1 <- mean(phi_tilde_01_uncentered)
-  V_2 <- mean(phi_tilde_02_uncentered)
+  V_1 <- mean(phi_tilde_01_uncentered)/2
+  V_2 <- mean(phi_tilde_02_uncentered)/2
   if_func <- (phi_01 + phi_tilde_01)/V_2 - V_1/(V_2^2)*(phi_02 + phi_tilde_02)
   plug_in <- V_1/V_2
   one_step <- V_1/V_2 + mean(if_func)
