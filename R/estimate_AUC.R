@@ -33,14 +33,14 @@ estimate_AUC <- function(time,
   calc_phi_01 <- function(j){
     fx <- f_hat_k[j]
     varphi_x <- KM.if[j]
-    int <- mean(ifelse(f_hat_k > fx, 1, 0) * (1 - S_hat_k) - ifelse(f_hat_k < fx, 1, 0) * S_hat_k)
+    int <- mean(ifelse(f_hat_k > fx, 1, 0) * (1 - S_hat_k) - ifelse(f_hat_k <= fx, 1, 0) * S_hat_k)
     return(varphi_x*int)
   }
 
   calc_phi_tilde_01 <- function(j){
     fx <- f_hat_k[j]
     Sx <- S_hat_k[j]
-    int <- mean(ifelse(f_hat_k > fx, 1, 0) * (1 - S_hat_k) * Sx + ifelse(f_hat_k < fx, 1, 0) * S_hat_k * (1 - Sx))
+    int <- mean(ifelse(f_hat_k > fx, 1, 0) * (1 - S_hat_k) * Sx + ifelse(f_hat_k <= fx, 1, 0) * S_hat_k * (1 - Sx))
     return(int)
   }
 
