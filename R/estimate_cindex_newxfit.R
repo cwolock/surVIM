@@ -51,7 +51,7 @@ estimate_cindex_newxfit <- function(time,
     # int <- -mean(ifelse(fx > preds, 1, 0) * rowSums(S_hat_k[,-1] * diff(varphi_x)) +
     #                ifelse(preds > fx, 1, 0) *  rowSums(varphi_x[-1] * t(diff(t(S_hat_k)))))
     #int <- mean(ifelse(fx > preds, 1, 0) * exceed_probs - ifelse(preds > fx, 1, 0) * exceed_probs) # old version
-    int <- mean(ifelse(fx > preds, 1, 0) * exceed_probs1 + ifelse(preds > fx, 1, 0) * exceed_probs2)
+    int <- mean(ifelse(fx > preds_holdout, 1, 0) * exceed_probs1 + ifelse(preds_holdout > fx, 1, 0) * exceed_probs2)
     return(int)
   }
 
@@ -70,8 +70,8 @@ estimate_cindex_newxfit <- function(time,
     exceed_probs1 <- -rowSums(sweep(S_hat_k_holdout[,-1], MARGIN=2, diff(Sx), `*`)) # old one, but doesn't properly account for tau
     exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k_holdout))), MARGIN=2, Sx[-1], `*`))
     #exceed_probs <-  -rowSums(S_hat_k[,-1] * diff(Sx))
-    int <- mean(ifelse(fx > preds, 1, 0) * exceed_probs1 +
-                  ifelse(preds > fx, 1, 0) * exceed_probs2)#-rowSums(Sx[-1] * t(diff(t(S_hat_k)))))
+    int <- mean(ifelse(fx > preds_holdout, 1, 0) * exceed_probs1 +
+                  ifelse(preds_holdout > fx, 1, 0) * exceed_probs2)#-rowSums(Sx[-1] * t(diff(t(S_hat_k)))))
     # -rowSums(S_hat_k[,-1] * diff(Sx))
     # -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, Sx[-1], `*`))
     # -rowSums(Sx[-1] * t(diff(t(S_hat_k))))
