@@ -62,8 +62,8 @@ estimate_cindex_newxfit <- function(time,
     return(int)
   }
 
-  phi_01 <- unlist(lapply(1:n, FUN = calc_phi_01))
-  # phi_01_new <- unlist(lapply(1:n, FUN = calc_phi_01_new))
+  # phi_01 <- unlist(lapply(1:n, FUN = calc_phi_01))
+  phi_01_new <- unlist(lapply(1:n, FUN = calc_phi_01_new))
 
   calc_phi_tilde_01 <- function(j){
     fx <- preds[j]
@@ -84,8 +84,8 @@ estimate_cindex_newxfit <- function(time,
     return(int)
   }
 
-  phi_tilde_01_uncentered <- unlist(lapply(1:n, FUN = calc_phi_tilde_01))
-  # phi_tilde_01_uncentered_new <- unlist(lapply(1:n, FUN = calc_phi_tilde_01_new))
+  # phi_tilde_01_uncentered <- unlist(lapply(1:n, FUN = calc_phi_tilde_01))
+  phi_tilde_01_uncentered_new <- unlist(lapply(1:n, FUN = calc_phi_tilde_01_new))
 
   calc_phi_02 <- function(j){
     varphi_x <- KM_ifs_k[j,]
@@ -104,8 +104,8 @@ estimate_cindex_newxfit <- function(time,
   }
 
 
-  phi_02 <- unlist(lapply(1:n, FUN = calc_phi_02))
-  # phi_02_new <- unlist(lapply(1:n, FUN = calc_phi_02_new))
+  # phi_02 <- unlist(lapply(1:n, FUN = calc_phi_02))
+  phi_02_new <- unlist(lapply(1:n, FUN = calc_phi_02_new))
 
   calc_phi_tilde_02 <- function(j){
     Sx <- S_hat_k[j,]
@@ -123,32 +123,32 @@ estimate_cindex_newxfit <- function(time,
     return(int)
   }
 
-  phi_tilde_02_uncentered <- unlist(lapply(1:n, FUN = calc_phi_tilde_02))
+  # phi_tilde_02_uncentered <- unlist(lapply(1:n, FUN = calc_phi_tilde_02))
 
-  # phi_tilde_02_uncentered_new <- unlist(lapply(1:n, FUN = calc_phi_tilde_02_new))
+  phi_tilde_02_uncentered_new <- unlist(lapply(1:n, FUN = calc_phi_tilde_02_new))
 
 
-  phi_tilde_01 <- phi_tilde_01_uncentered - mean(phi_tilde_01_uncentered)
-  phi_tilde_02 <- phi_tilde_02_uncentered - mean(phi_tilde_02_uncentered)
-  # phi_tilde_01_new <- phi_tilde_01_uncentered_new - mean(phi_tilde_01_uncentered_new)
-  # phi_tilde_02_new <- phi_tilde_02_uncentered_new - mean(phi_tilde_02_uncentered_new)
+  # phi_tilde_01 <- phi_tilde_01_uncentered - mean(phi_tilde_01_uncentered)
+  # phi_tilde_02 <- phi_tilde_02_uncentered - mean(phi_tilde_02_uncentered)
+  phi_tilde_01_new <- phi_tilde_01_uncentered_new - mean(phi_tilde_01_uncentered_new)
+  phi_tilde_02_new <- phi_tilde_02_uncentered_new - mean(phi_tilde_02_uncentered_new)
   # note that including phi_tilde in the correction is a bit silly because we've
   # centered that term - it has no contribution to the correction (nor should it)
   # if we're underestimating, (both one-step and plug-in), then that means
   # the ratio V_1/V_2 is too small. So this gets amplfied in the one-step (we subtract
   # off something larger, making the estimate smaller)
-  V_1 <- mean(phi_tilde_01_uncentered)/2
-  V_2 <- mean(phi_tilde_02_uncentered)/2
-  # V_1_new <- mean(phi_tilde_01_uncentered_new)/2
-  # V_2_new <- mean(phi_tilde_02_uncentered_new)/2
-  if_func <- (phi_01 + phi_tilde_01)/V_2 - V_1/(V_2^2)*(phi_02 + phi_tilde_02)
-  plug_in <- V_1/V_2
-  one_step <- V_1/V_2 + mean(if_func)
+  # V_1 <- mean(phi_tilde_01_uncentered)/2
+  # V_2 <- mean(phi_tilde_02_uncentered)/2
+  V_1_new <- mean(phi_tilde_01_uncentered_new)/2
+  V_2_new <- mean(phi_tilde_02_uncentered_new)/2
+  # if_func <- (phi_01 + phi_tilde_01)/V_2 - V_1/(V_2^2)*(phi_02 + phi_tilde_02)
+  # plug_in <- V_1/V_2
+  # one_step <- V_1/V_2 + mean(if_func)
 
 
-  # if_func <- (phi_01_new + phi_tilde_01_new)/V_2_new - V_1_new/(V_2_new^2)*(phi_02_new + phi_tilde_02_new)
-  # plug_in <- V_1_new/V_2_new
-  # one_step <- V_1_new/V_2_new + mean(if_func_new)
+  if_func <- (phi_01_new + phi_tilde_01_new)/V_2_new - V_1_new/(V_2_new^2)*(phi_02_new + phi_tilde_02_new)
+  plug_in <- V_1_new/V_2_new
+  one_step <- V_1_new/V_2_new + mean(if_func_new)
 
   return(list(one_step = one_step,
               plug_in = plug_in,
