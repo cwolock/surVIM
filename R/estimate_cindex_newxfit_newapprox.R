@@ -1,4 +1,4 @@
-estimate_cindex_newxfit <- function(time,
+estimate_cindex_newxfit_newapprox <- function(time,
                                     event,
                                     approx_times,
                                     preds,
