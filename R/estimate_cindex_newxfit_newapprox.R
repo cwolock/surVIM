@@ -126,7 +126,7 @@ estimate_cindex_newxfit_newapprox <- function(time,
 #   one_step <- V_1_new/V_2_new + mean(if_func)
 
   if_func_new_new <- 2*(phi_01_new + phi_tilde_01_new)/(1-V_2_new_new^2) -
-    4*V_2_new_new*V_1_new/(1-V_2_new_new^2)*(phi_02_new + phi_tilde_02_new_new)
+    4*V_2_new_new*V_1_new/(1-V_2_new_new^2)*(phi_02_new_new + phi_tilde_02_new_new)
   plug_in_new_new <- 2*V_1_new/(1 - V_2_new_new^2)
   one_step_new_new <- plug_in_new_new + mean(if_func_new_new)
 
