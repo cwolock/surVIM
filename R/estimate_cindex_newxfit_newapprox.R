@@ -120,10 +120,10 @@ estimate_cindex_newxfit_newapprox <- function(time,
   # plug_in <- V_1/V_2
   # one_step <- V_1/V_2 + mean(if_func)
 
-
-  if_func <- (phi_01_new + phi_tilde_01_new)/V_2_new - V_1_new/(V_2_new^2)*(phi_02_new + phi_tilde_02_new)
-  plug_in <- V_1_new/V_2_new
-  one_step <- V_1_new/V_2_new + mean(if_func)
+#
+#   if_func <- (phi_01_new + phi_tilde_01_new)/V_2_new - V_1_new/(V_2_new^2)*(phi_02_new + phi_tilde_02_new)
+#   plug_in <- V_1_new/V_2_new
+#   one_step <- V_1_new/V_2_new + mean(if_func)
 
   if_func_new_new <- 2*(phi_01_new + phi_tilde_01_new)/(1-V_2_new_new^2) -
     4*V_2_new_new*V_1_new/(1-V_2_new_new^2)*(phi_02_new + phi_tilde_02_new_new)
