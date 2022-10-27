@@ -104,7 +104,7 @@ estimate_cindex_newxfit_newapprox <- function(time,
   # phi_tilde_01 <- phi_tilde_01_uncentered - mean(phi_tilde_01_uncentered)
   # phi_tilde_02 <- phi_tilde_02_uncentered - mean(phi_tilde_02_uncentered)
   phi_tilde_01_new <- phi_tilde_01_uncentered_new - mean(phi_tilde_01_uncentered_new)
-  phi_tilde_02_new <- phi_tilde_02_uncentered_new - mean(phi_tilde_02_uncentered_new)
+  # phi_tilde_02_new <- phi_tilde_02_uncentered_new - mean(phi_tilde_02_uncentered_new)
   phi_tilde_02_new_new <- phi_tilde_02_uncentered_new_new - mean(phi_tilde_02_uncentered_new_new)
   # note that including phi_tilde in the correction is a bit silly because we've
   # centered that term - it has no contribution to the correction (nor should it)
@@ -114,7 +114,7 @@ estimate_cindex_newxfit_newapprox <- function(time,
   # V_1 <- mean(phi_tilde_01_uncentered)/2
   # V_2 <- mean(phi_tilde_02_uncentered)/2
   V_1_new <- mean(phi_tilde_01_uncentered_new)/2
-  V_2_new <- mean(phi_tilde_02_uncentered_new)/2
+  # V_2_new <- mean(phi_tilde_02_uncentered_new)/2
   V_2_new_new <- mean(phi_tilde_02_uncentered_new_new)
   # if_func <- (phi_01 + phi_tilde_01)/V_2 - V_1/(V_2^2)*(phi_02 + phi_tilde_02)
   # plug_in <- V_1/V_2
