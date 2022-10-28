@@ -7,6 +7,11 @@ estimate_cindex_newxfit_newapprox <- function(time,
                                     tau,
                                     preds_holdout,
                                     S_hat_holdout){
+  sigma <- 0.1
+
+  approxLoss <- function(x, sigma) { ## sigmoid function for loss
+    1 / (1 + exp(x / sigma))
+  }
 
   n <- length(time)
   # calculate integral for KM influence function
@@ -44,24 +49,44 @@ estimate_cindex_newxfit_newapprox <- function(time,
 
   k <- length(approx_times)
 
+  # calc_phi_01 <- function(j){
+  #   fx <- preds[j]
+  #   varphi_x <- KM_ifs_k[j,]
+  #   exceed_probs1 <- -rowSums(sweep(S_hat_k_holdout[,-k], MARGIN=2, diff(varphi_x), `*`))
+  #   exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k_holdout))), MARGIN=2, varphi_x[-k], `*`))
+  #   int <- mean(ifelse(fx > preds_holdout, 1, 0) * exceed_probs1 + ifelse(preds_holdout >= fx, 1, 0) * exceed_probs2)
+  #   return(int)
+  # }
+
   calc_phi_01 <- function(j){
     fx <- preds[j]
     varphi_x <- KM_ifs_k[j,]
     exceed_probs1 <- -rowSums(sweep(S_hat_k_holdout[,-k], MARGIN=2, diff(varphi_x), `*`))
     exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k_holdout))), MARGIN=2, varphi_x[-k], `*`))
-    int <- mean(ifelse(fx > preds_holdout, 1, 0) * exceed_probs1 + ifelse(preds_holdout >= fx, 1, 0) * exceed_probs2)
+    int <- mean((1 / (1 + exp(preds_holdout - fx / sigma)))* exceed_probs1 +
+                  (1 / (1 + exp(fx - preds_holdout / sigma)))* exceed_probs2)
     return(int)
   }
 
   phi_01 <- unlist(lapply(1:n, FUN = calc_phi_01))
+
+  # calc_phi_tilde_01 <- function(j){
+  #   fx <- preds[j]
+  #   Sx <- S_hat_k[j,]
+  #   exceed_probs1 <- -rowSums(sweep(S_hat_k_holdout[,-k], MARGIN=2, diff(Sx), `*`))
+  #   exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k_holdout))), MARGIN=2, Sx[-k], `*`))
+  #   int <- mean(ifelse(fx > preds_holdout, 1, 0) * exceed_probs1 +
+  #                 ifelse(preds_holdout >= fx, 1, 0) * exceed_probs2)
+  #   return(int)
+  # }
 
   calc_phi_tilde_01 <- function(j){
     fx <- preds[j]
     Sx <- S_hat_k[j,]
     exceed_probs1 <- -rowSums(sweep(S_hat_k_holdout[,-k], MARGIN=2, diff(Sx), `*`))
     exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k_holdout))), MARGIN=2, Sx[-k], `*`))
-    int <- mean(ifelse(fx > preds_holdout, 1, 0) * exceed_probs1 +
-                  ifelse(preds_holdout >= fx, 1, 0) * exceed_probs2)
+    int <- mean((1 / (1 + exp(preds_holdout - fx / sigma)))* exceed_probs1 +
+                  (1 / (1 + exp(fx - preds_holdout / sigma))) * exceed_probs2)
     return(int)
   }
 
