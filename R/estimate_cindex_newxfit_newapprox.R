@@ -63,8 +63,8 @@ estimate_cindex_newxfit_newapprox <- function(time,
     varphi_x <- KM_ifs_k[j,]
     exceed_probs1 <- -rowSums(sweep(S_hat_k_holdout[,-k], MARGIN=2, diff(varphi_x), `*`))
     exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k_holdout))), MARGIN=2, varphi_x[-k], `*`))
-    int <- mean((1 / (1 + exp(preds_holdout - fx / sigma)))* exceed_probs1 +
-                  (1 / (1 + exp(fx - preds_holdout / sigma)))* exceed_probs2)
+    int <- mean((1 / (1 + exp((preds_holdout - fx) / sigma)))* exceed_probs1 +
+                  (1 / (1 + exp((fx - preds_holdout) / sigma)))* exceed_probs2)
     return(int)
   }
 
@@ -85,8 +85,8 @@ estimate_cindex_newxfit_newapprox <- function(time,
     Sx <- S_hat_k[j,]
     exceed_probs1 <- -rowSums(sweep(S_hat_k_holdout[,-k], MARGIN=2, diff(Sx), `*`))
     exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k_holdout))), MARGIN=2, Sx[-k], `*`))
-    int <- mean((1 / (1 + exp(preds_holdout - fx / sigma)))* exceed_probs1 +
-                  (1 / (1 + exp(fx - preds_holdout / sigma))) * exceed_probs2)
+    int <- mean((1 / (1 + exp((preds_holdout - fx) / sigma)))* exceed_probs1 +
+                  (1 / (1 + exp((fx - preds_holdout) / sigma))) * exceed_probs2)
     return(int)
   }
 
