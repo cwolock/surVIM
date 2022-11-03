@@ -31,20 +31,43 @@ vim_AUC <- function(time,
     for (j in 1:length(unique(folds))){
       time_holdout <- time[folds == j]
       event_holdout <- event[folds == j]
+      if (length(unique(folds)) > 1){
+        subfolds <- ss_folds[folds != j]
+        if (sample_split){
+          curr_folds <- which(subfolds == unique(ss_folds[folds == j]))
+          preds_holdout <- unlist(lapply(f_hat, function(x) x[,i])[-j])[curr_folds]
+          S_hat_holdout = do.call(rbind, S_hat[-j])[curr_folds,]
+          preds_holdout_reduced = unlist(lapply(fs_hat, function(x) x[,i])[-j])[curr_folds]
+        } else{
+          preds_holdout <- unlist(lapply(f_hat, function(x) x[,i])[-j])
+          S_hat_holdout = do.call(rbind, S_hat[-j])
+          preds_holdout_reduced = unlist(lapply(fs_hat, function(x) x[,i])[-j])
+        }
+
+      } else{
+        preds_holdout <- f_hat[[j]][,i]
+        S_hat_holdout = S_hat[[j]]
+        preds_holdout_reduced = fs_hat[[j]][,i]
+      }
+      # fix bug here in how the holdout data is picked with sample splitting
       V_0 <- estimate_AUC(time = time_holdout,
-                            event = event_holdout,
-                            approx_times = approx_times,
-                            t0 = t0,
-                            preds = f_hat[[j]][,i],
-                            S_hat = S_hat[[j]],
-                            G_hat = G_hat[[j]])
+                          event = event_holdout,
+                          approx_times = approx_times,
+                          t0 = t0,
+                          preds = f_hat[[j]][,i],
+                          preds_holdout = preds_holdout,
+                          S_hat = S_hat[[j]],
+                          S_hat_holdout = S_hat_holdout,
+                          G_hat = G_hat[[j]])
       V_0s <- estimate_AUC(time = time_holdout,
-                             event = event_holdout,
-                             approx_times = approx_times,
-                             t0 = t0,
-                             preds = fs_hat[[j]][,i],
-                             S_hat = S_hat[[j]],
-                             G_hat = G_hat[[j]])
+                           event = event_holdout,
+                           approx_times = approx_times,
+                           t0 = t0,
+                           preds = fs_hat[[j]][,i],
+                           preds_holdout = preds_holdout_reduced,
+                           S_hat = S_hat[[j]],
+                           S_hat_holdout = S_hat_holdout,
+                           G_hat = G_hat[[j]])
       CV_fulls[j] <- V_0$one_step
       CV_reduceds[j] <- V_0s$one_step
       CV_one_steps[j] <-  V_0$one_step -V_0s$one_step
