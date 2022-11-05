@@ -7,7 +7,8 @@ vim_cindex <- function(time,
                        S_hat,
                        G_hat,
                        folds,
-                       sample_split){
+                       sample_split,
+                       ss_folds){
 
   # CV_fulls <- rep(NA, length(unique(folds)))
   # CV_reduceds <- rep(NA, length(unique(folds)))
