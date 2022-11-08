@@ -34,10 +34,19 @@ vim_AUC <- function(time,
       if (length(unique(folds)) > 1){
         subfolds <- ss_folds[folds != j]
         if (sample_split & length(unique(folds)) > 2){ # xfit and sample split
-          curr_folds <- which(subfolds == unique(ss_folds[folds == j]))
-          preds_holdout <- unlist(lapply(f_hat, function(x) x[,i])[-j])[curr_folds]
-          S_hat_holdout = do.call(rbind, S_hat[-j])[curr_folds,]
-          preds_holdout_reduced = unlist(lapply(fs_hat, function(x) x[,i])[-j])[curr_folds]
+          other_js <- unique(folds[ss_folds == unique(ss_folds[folds == j]) & folds != j])
+          # print(j)
+          # print(other_js)
+          #curr_folds <- which(subfolds == unique(ss_folds[folds == j]))
+          # print(ss_folds)
+          # print(subfolds)
+          # print(curr_folds)
+          preds_holdout <- unlist(lapply(f_hat, function(x) x[,i])[other_js])
+          S_hat_holdout = do.call(rbind, S_hat[other_js])
+          preds_holdout_reduced = unlist(lapply(fs_hat, function(x) x[,i])[other_js])
+          # preds_holdout2 <- unlist(lapply(f_hat, function(x) x[,i])[-j])[curr_folds]
+          # S_hat_holdout2 = do.call(rbind, S_hat[-j])[curr_folds,]
+          # preds_holdout_reduced2 = unlist(lapply(fs_hat, function(x) x[,i])[-j])[curr_folds]
         } else if (sample_split & length(unique(folds)) <= 2){ # sample split only, no xfit
           preds_holdout <- f_hat[[j]][,i]
           S_hat_holdout = S_hat[[j]]
@@ -52,6 +61,9 @@ vim_AUC <- function(time,
         S_hat_holdout = S_hat[[j]]
         preds_holdout_reduced = fs_hat[[j]][,i]
       }
+      # print(length(preds_holdout))
+      # print(dim(S_hat_holdout))
+      # print(length(preds_holdout_reduced))
       # fix bug here in how the holdout data is picked with sample splitting
       V_0 <- estimate_AUC(time = time_holdout,
                           event = event_holdout,
