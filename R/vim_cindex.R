@@ -118,11 +118,15 @@ vim_cindex <- function(time,
     event_holdout <- event[folds == j]
     if (length(unique(folds)) > 1){
       subfolds <- ss_folds[folds != j]
-      if (sample_split){
+      if (sample_split & length(unique(folds)) > 2){
         curr_folds <- which(subfolds == unique(ss_folds[folds == j]))
         preds_holdout <- unlist(f_hat[-j])[curr_folds]
         S_hat_holdout = do.call(rbind, S_hat[-j])[curr_folds,]
         preds_holdout_reduced = unlist(fs_hat[-j])[curr_folds]
+      } else if (sample_split & length(unique(folds)) <= 2){
+        preds_holdout <- f_hat[[j]]
+        S_hat_holdout = S_hat[[j]]
+        preds_holdout_reduced = fs_hat[[j]]
       } else{
         preds_holdout <- unlist(f_hat[-j])
         S_hat_holdout = do.call(rbind, S_hat[-j])

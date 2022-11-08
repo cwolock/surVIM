@@ -33,18 +33,21 @@ vim_AUC <- function(time,
       event_holdout <- event[folds == j]
       if (length(unique(folds)) > 1){
         subfolds <- ss_folds[folds != j]
-        if (sample_split){
+        if (sample_split & length(unique(folds)) > 2){ # xfit and sample split
           curr_folds <- which(subfolds == unique(ss_folds[folds == j]))
           preds_holdout <- unlist(lapply(f_hat, function(x) x[,i])[-j])[curr_folds]
           S_hat_holdout = do.call(rbind, S_hat[-j])[curr_folds,]
           preds_holdout_reduced = unlist(lapply(fs_hat, function(x) x[,i])[-j])[curr_folds]
-        } else{
+        } else if (sample_split & length(unique(folds)) <= 2){ # sample split only, no xfit
+          preds_holdout <- f_hat[[j]][,i]
+          S_hat_holdout = S_hat[[j]]
+          preds_holdout_reduced = fs_hat[[j]][,i]
+        } else{ # xfit, no sample split
           preds_holdout <- unlist(lapply(f_hat, function(x) x[,i])[-j])
           S_hat_holdout = do.call(rbind, S_hat[-j])
           preds_holdout_reduced = unlist(lapply(fs_hat, function(x) x[,i])[-j])
         }
-
-      } else{
+      } else{ # no xfit, no sample split
         preds_holdout <- f_hat[[j]][,i]
         S_hat_holdout = S_hat[[j]]
         preds_holdout_reduced = fs_hat[[j]][,i]
