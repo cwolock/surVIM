@@ -9,6 +9,7 @@ estimate_brier <- function(time,
   n <- length(time)
   # calculate integral for KM influence function
   # check left vs right continuous stuff here
+  G_hat[G_hat < 0.01] <- 0.01 # truncate!
   int.vals <- t(sapply(1:n, function(i) {
     vals <- diff(1/S_hat[i,])* 1/ G_hat[i,-ncol(G_hat)]
     if(any(approx_times[-1] > time[i])){
