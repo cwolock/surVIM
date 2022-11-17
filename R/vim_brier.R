@@ -10,7 +10,8 @@ vim_brier <- function(time,
                       ss_folds,
                       sample_split,
                       bootstrap = FALSE,
-                      B = 1000){
+                      B = 1000,
+                      truncate = TRUE){
   n <- length(time)
   V <- length(unique(folds))
   # if (sample_split){
@@ -68,14 +69,16 @@ vim_brier <- function(time,
                             t0 = t0,
                             preds = f_hat[[j]][,i],
                             S_hat = S_hat[[j]],
-                            G_hat = G_hat[[j]])
+                            G_hat = G_hat[[j]],
+                            truncate = truncate)
       V_0s <- estimate_brier(time = time_holdout,
                              event = event_holdout,
                              approx_times = approx_times,
                              t0 = t0,
                              preds = fs_hat[[j]][,i],
                              S_hat = S_hat[[j]],
-                             G_hat = G_hat[[j]])
+                             G_hat = G_hat[[j]],
+                             truncate = truncate)
       CV_fulls[j] <- V_0$one_step
       CV_reduceds[j] <- V_0s$one_step
       CV_one_steps[j] <-  V_0$one_step -V_0s$one_step
