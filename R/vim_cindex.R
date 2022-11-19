@@ -129,15 +129,15 @@ vim_cindex <- function(time,
         preds_holdout_reduced = unlist(fs_hat[other_js])
       } else if (sample_split & length(unique(folds)) <= 2){
         preds_holdout <- f_hat[[j]]
-        S_hat_holdout = S_hat[[j]]
-        preds_holdout_reduced = fs_hat[[j]]
+        S_hat_holdout <- S_hat[[j]]
+        preds_holdout_reduced <- fs_hat[[j]]
       } else{
-        # preds_holdout <- unlist(f_hat[-j])
-        # S_hat_holdout = do.call(rbind, S_hat[-j])
-        # preds_holdout_reduced = unlist(fs_hat[-j])
-        preds_holdout <- f_hat[[j]]
-        S_hat_holdout = S_hat[[j]]
-        preds_holdout_reduced = fs_hat[[j]]
+        preds_holdout <- unlist(f_hat[-j])
+        S_hat_holdout = do.call(rbind, S_hat[-j])
+        preds_holdout_reduced = unlist(fs_hat[-j])
+        # preds_holdout <- f_hat[[j]]
+        # S_hat_holdout <- S_hat[[j]]
+        # preds_holdout_reduced <- fs_hat[[j]]
       }
 
     } else{
@@ -146,7 +146,7 @@ vim_cindex <- function(time,
       preds_holdout_reduced = fs_hat[[j]]
     }
     # fix bug here in how the holdout data is picked with sample splitting
-    V_0 <- estimate_cindex(time = time_holdout,
+    V_0 <- surVIM:::estimate_cindex(time = time_holdout,
                            event = event_holdout,
                            approx_times = approx_times,
                            tau = tau,
@@ -155,7 +155,7 @@ vim_cindex <- function(time,
                            S_hat = S_hat[[j]],
                            S_hat_holdout = S_hat_holdout,
                            G_hat = G_hat[[j]])
-    V_0s <- estimate_cindex(time = time_holdout,
+    V_0s <- surVIM:::estimate_cindex(time = time_holdout,
                             event = event_holdout,
                             approx_times = approx_times,
                             tau = tau,
