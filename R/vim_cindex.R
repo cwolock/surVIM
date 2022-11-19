@@ -132,6 +132,7 @@ vim_cindex <- function(time,
         S_hat_holdout <- S_hat[[j]]
         preds_holdout_reduced <- fs_hat[[j]]
       } else{
+        print("old xfit")
         preds_holdout <- unlist(f_hat[-j])
         S_hat_holdout = do.call(rbind, S_hat[-j])
         preds_holdout_reduced = unlist(fs_hat[-j])
