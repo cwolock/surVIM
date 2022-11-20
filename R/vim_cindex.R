@@ -149,6 +149,10 @@ vim_cindex <- function(time,
       S_hat_holdout = S_hat[[j]]
       preds_holdout_reduced = fs_hat[[j]]
     }
+
+    print(length(preds_holdout))
+    print(length(preds_holdout_reduced))
+    print(dim(S_hat_holdout))
     # fix bug here in how the holdout data is picked with sample splitting
     V_0 <- surVIM:::estimate_cindex(time = time_holdout,
                            event = event_holdout,
