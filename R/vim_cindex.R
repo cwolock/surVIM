@@ -119,7 +119,6 @@ vim_cindex <- function(time,
     if (length(unique(folds)) > 1){
       subfolds <- ss_folds[folds != j]
       if (sample_split & length(unique(folds)) > 2){
-        print("123")
         other_js <- unique(folds[ss_folds == unique(ss_folds[folds == j]) & folds != j])
         #curr_folds <- which(subfolds == unique(ss_folds[folds == j]))
         # preds_holdout <- unlist(f_hat[-j])[curr_folds]
@@ -129,12 +128,10 @@ vim_cindex <- function(time,
         S_hat_holdout = do.call(rbind, S_hat[other_js])
         preds_holdout_reduced = unlist(fs_hat[other_js])
       } else if (sample_split & length(unique(folds)) <= 2){
-        print("456")
         preds_holdout <- f_hat[[j]]
         S_hat_holdout <- S_hat[[j]]
         preds_holdout_reduced <- fs_hat[[j]]
       } else{
-        print("old xfit")
         preds_holdout <- unlist(f_hat[-j])
         S_hat_holdout = do.call(rbind, S_hat[-j])
         preds_holdout_reduced = unlist(fs_hat[-j])
@@ -144,7 +141,6 @@ vim_cindex <- function(time,
       }
 
     } else{
-      print("789")
       preds_holdout <- f_hat[[j]]
       S_hat_holdout = S_hat[[j]]
       preds_holdout_reduced = fs_hat[[j]]

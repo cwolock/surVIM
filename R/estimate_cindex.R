@@ -38,10 +38,6 @@ estimate_cindex <- function(time,
 
   S_hat_k <- S_hat[,approx_times <= tau]
   S_hat_k_holdout <- S_hat_holdout[,approx_times <= tau]
-  print(dim(S_hat_k))
-  print(dim(S_hat_k_holdout))
-  print(length(preds))
-  print(length(preds_holdout))
   KM_ifs_k <- KM_ifs[,approx_times <= tau]
 
   k <- length(approx_times)
