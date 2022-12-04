@@ -89,9 +89,16 @@ estimate_cindex <- function(time,
   V_1 <- mean(phi_tilde_01_uncentered)/2
   V_2 <- mean(phi_tilde_02_uncentered)/2
 
+  if_func_1 <- phi_01 + phi_tilde_01
+  if_func_2 <- phi_02 + phi_tilde_02
+
+  V_1_os <- V_1 + mean(if_func_1)
+  V_2_os <- V_2 + mean(if_func_2)
+  one_step <- V_1_os/V_2_os
+
   if_func <- (phi_01 + phi_tilde_01)/V_2 - V_1/(V_2^2)*(phi_02 + phi_tilde_02)
   plug_in <- V_1/V_2
-  one_step <- V_1/V_2 + mean(if_func)
+  # one_step <- V_1/V_2 + mean(if_func)
 
   return(list(one_step = one_step,
               plug_in = plug_in,
