@@ -47,6 +47,8 @@ estimate_AUC_new<- function(time,
   G_hat_k <- G_hat[,k]
   f_hat_k <- preds # oracle is CDF, not survival
   f_hat_k_holdout <- preds_holdout
+
+
   inner.func.1 <- ifelse(time <= t0 & event == 1, 1/(S_hat_Y * G_hat_Y), 0 )
   inner.func.2 <- int.vals[,k]
   KM.if <- -S_hat_k * ( inner.func.1 - inner.func.2)
@@ -116,8 +118,8 @@ estimate_AUC_new<- function(time,
   V_1 <- mean(phi_tilde_01_uncentered)/2
   V_2 <- mean(phi_tilde_02_uncentered)/2
 
-  if_func_1 <- phi_01 + phi_tilde_01 + phi_01_extra
-  if_func_2 <- phi_02 + phi_tilde_02 + phi_02_extra
+  if_func_1 <- phi_01 + phi_tilde_01 - phi_01_extra
+  if_func_2 <- phi_02 + phi_tilde_02 - phi_02_extra
 
   V_1_os <- V_1 + mean(if_func_1)
   V_2_os <- V_2 + mean(if_func_2)
