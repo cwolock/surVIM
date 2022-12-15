@@ -56,6 +56,8 @@ estimate_AUC_new<- function(time,
   inner.func.2 <- int.vals_holdout[,k]
   KM.if_holdout <- -S_hat_k_holdout * ( inner.func.1 - inner.func.2)
 
+  #print(KM.if_holdout)
+
   calc_phi_01 <- function(j){
     fx <- f_hat_k[j]
     varphi_x <- KM.if[j]
@@ -81,7 +83,7 @@ estimate_AUC_new<- function(time,
   }
 
   phi_01 <- unlist(lapply(1:n, FUN = calc_phi_01))
-  phi_01_extra <- unlist(lapply(1:n_extra, FUN = calc_phi_01_extra))
+  phi_01_extra <- unlist(lapply(1:n, FUN = calc_phi_01_extra))
 
   phi_tilde_01_uncentered <- unlist(lapply(1:n, FUN = calc_phi_tilde_01))
 
