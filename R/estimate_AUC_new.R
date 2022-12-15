@@ -60,27 +60,51 @@ estimate_AUC_new<- function(time,
 
   #print(KM.if_holdout)
 
+  # calc_phi_01 <- function(j){
+  #   fx <- f_hat_k[j]
+  #   varphi_x <- KM.if[j]
+  #   int <- mean(ifelse(f_hat_k_holdout > fx, 1, 0) * (1 - S_hat_k_holdout) -
+  #                 ifelse(f_hat_k_holdout <= fx, 1, 0) * S_hat_k_holdout)
+  #   return(varphi_x*int)
+  # }
+  #
+  # calc_phi_01_extra <- function(j){
+  #   fx <- f_hat_k[j]
+  #   varphi_x <- KM.if[j]
+  #   int <- mean(ifelse(f_hat_k_holdout > fx, 1, 0) * (1 - KM.if_holdout) -
+  #                 ifelse(f_hat_k_holdout <= fx, 1, 0) * KM.if_holdout)
+  #   return(varphi_x*int/2)
+  # }
+  #
+  # calc_phi_tilde_01 <- function(j){
+  #   fx <- f_hat_k[j]
+  #   Sx <- S_hat_k[j]
+  #   int <- mean(ifelse(f_hat_k_holdout > fx, 1, 0) * (1 - S_hat_k_holdout) * Sx +
+  #                 ifelse(f_hat_k_holdout <= fx, 1, 0) * S_hat_k_holdout * (1 - Sx))
+  #   return(int)
+  # }
+
   calc_phi_01 <- function(j){
     fx <- f_hat_k[j]
     varphi_x <- KM.if[j]
-    int <- mean(ifelse(f_hat_k_holdout > fx, 1, 0) * (1 - S_hat_k_holdout) -
-                  ifelse(f_hat_k_holdout <= fx, 1, 0) * S_hat_k_holdout)
+    int <- mean(ifelse(f_hat_k > fx, 1, 0) * (1 - S_hat_k) -
+                  ifelse(f_hat_k <= fx, 1, 0) * S_hat_k)
     return(varphi_x*int)
   }
 
   calc_phi_01_extra <- function(j){
     fx <- f_hat_k[j]
     varphi_x <- KM.if[j]
-    int <- mean(ifelse(f_hat_k_holdout > fx, 1, 0) * (1 - KM.if_holdout) -
-                  ifelse(f_hat_k_holdout <= fx, 1, 0) * KM.if_holdout)
+    int <- mean(ifelse(f_hat_k > fx, 1, 0) * (1 - KM.if) -
+                  ifelse(f_hat_k <= fx, 1, 0) * KM.if)
     return(varphi_x*int/2)
   }
 
   calc_phi_tilde_01 <- function(j){
     fx <- f_hat_k[j]
     Sx <- S_hat_k[j]
-    int <- mean(ifelse(f_hat_k_holdout > fx, 1, 0) * (1 - S_hat_k_holdout) * Sx +
-                  ifelse(f_hat_k_holdout <= fx, 1, 0) * S_hat_k_holdout * (1 - Sx))
+    int <- mean(ifelse(f_hat_k > fx, 1, 0) * (1 - S_hat_k) * Sx +
+                  ifelse(f_hat_k <= fx, 1, 0) * S_hat_k * (1 - Sx))
     return(int)
   }
 
@@ -91,21 +115,39 @@ estimate_AUC_new<- function(time,
 
   phi_tilde_01 <- phi_tilde_01_uncentered - mean(phi_tilde_01_uncentered)
 
+  # calc_phi_02 <- function(j){
+  #   varphi_x <- KM.if[j]
+  #   int <- mean((1 - S_hat_k_holdout) - S_hat_k_holdout)
+  #   return(varphi_x * int)
+  # }
+  #
+  # calc_phi_02_extra <- function(j){
+  #   varphi_x <- KM.if[j]
+  #   int <- mean((1 - KM.if_holdout) - KM.if_holdout)
+  #   return(varphi_x * int/2)
+  # }
+  #
+  # calc_phi_tilde_02 <- function(j){
+  #   Sx <- S_hat_k[j]
+  #   int <- mean((1 - S_hat_k_holdout) * Sx + S_hat_k_holdout * (1 - Sx))
+  #   return(int)
+  # }
+
   calc_phi_02 <- function(j){
     varphi_x <- KM.if[j]
-    int <- mean((1 - S_hat_k_holdout) - S_hat_k_holdout)
+    int <- mean((1 - S_hat_k) - S_hat_k)
     return(varphi_x * int)
   }
 
   calc_phi_02_extra <- function(j){
     varphi_x <- KM.if[j]
-    int <- mean((1 - KM.if_holdout) - KM.if_holdout)
+    int <- mean((1 - KM.if) - KM.if)
     return(varphi_x * int/2)
   }
 
   calc_phi_tilde_02 <- function(j){
     Sx <- S_hat_k[j]
-    int <- mean((1 - S_hat_k_holdout) * Sx + S_hat_k_holdout * (1 - Sx))
+    int <- mean((1 - S_hat_k) * Sx + S_hat_k * (1 - Sx))
     return(int)
   }
 
@@ -118,8 +160,8 @@ estimate_AUC_new<- function(time,
   V_1 <- mean(phi_tilde_01_uncentered)/2
   V_2 <- mean(phi_tilde_02_uncentered)/2
 
-  if_func_1 <- phi_01 + phi_tilde_01 - phi_01_extra
-  if_func_2 <- phi_02 + phi_tilde_02 - phi_02_extra
+  if_func_1 <- phi_01 + phi_tilde_01 + phi_01_extra
+  if_func_2 <- phi_02 + phi_tilde_02 + phi_02_extra
 
   V_1_os <- V_1 + mean(if_func_1)
   V_2_os <- V_2 + mean(if_func_2)
