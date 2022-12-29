@@ -209,5 +209,7 @@ estimate_AUC_new<- function(time,
 
   return(list(one_step = one_step,
               plug_in = plug_in,
-              if_func = if_func))
+              if_func = if_func,
+              numerator = V_1_os,
+              denominator = V_2_os))
 }
