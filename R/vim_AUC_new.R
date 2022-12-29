@@ -116,9 +116,9 @@ vim_AUC_new <- function(time,
       CV_numerators[j] <- V_0$numerator - V_0s$numerator
       CV_denominators[j] <- V_0$denominator
       split_numerator_fulls[j] <- V_0$numerator
-      split_denominator_fulls <- V_0$denominator
-      split_numerator_reduceds <- V_0s$numerator
-      split_denominator_reduceds <- V_0s$denominator
+      split_denominator_fulls[j] <- V_0$denominator
+      split_numerator_reduceds[j] <- V_0s$numerator
+      split_denominator_reduceds[j] <- V_0s$denominator
       split_one_step_fulls[j] <- V_0$one_step
       split_plug_in_fulls[j] <- V_0$plug_in
       split_one_step_reduceds[j] <- V_0s$one_step
