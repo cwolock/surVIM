@@ -1,3 +1,24 @@
+#' Estimate classification accuracy VIM
+#'
+#' @param time \code{n x 1} numeric vector of observed
+#' follow-up times If there is censoring, these are the minimum of the
+#' event and censoring times.
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.
+#' @param time_grid_approx Numeric vector of length J1 giving times at which to
+#' approximate integrals.
+#' @param landmark_times Numeric vector of length J2 giving
+#' times at which to estimate accuracy
+#' @param f_hat Full oracle predictions (n x J1 matrix)
+#' @param fs_hat Residual oracle predictions (n x J1 matrix)
+#' @param S_hat Estimates of conditional event time survival function (n x J2 matrix)
+#' @param G_hat Estimate of conditional censoring time survival function (n x J2 matrix)
+#' @param folds Numeric vector of length n giving cross-fitting folds
+#' @param sample_split Logical indicating whether or not to sample split
+#' @param ss_folds Numeric vector of length n giving sample-splitting folds
+#'
+#' @return data frame giving results
+
 vim_accuracy <- function(time,
                          event,
                          approx_times,
@@ -10,25 +31,32 @@ vim_accuracy <- function(time,
                          sample_split,
                          ss_folds){
   n <- length(time)
-  one_step <- rep(NA, length(landmark_times))
-  plug_in <- rep(NA, length(landmark_times))
-  var_est <- rep(NA, length(landmark_times))
-  full <- rep(NA, length(landmark_times))
-  reduced <- rep(NA, length(landmark_times))
-  for(i in 1:length(landmark_times)) {
+  J1 <- length(landmark_times)
+  V <- length(unique(folds))
+  one_step <- rep(NA, J1)
+  plug_in <- rep(NA, J1)
+  var_est <- rep(NA, J1)
+  full_one_step <- rep(NA, J1)
+  reduced_one_step <- rep(NA, J1)
+  full_plug_in <- rep(NA, J1)
+  reduced_plug_in <- rep(NA, J1)
+
+  for(i in 1:J1) {
     t0 <- landmark_times[i]
-    CV_fulls <- rep(NA, length(unique(folds)))
-    CV_reduceds <- rep(NA, length(unique(folds)))
-    CV_one_steps <- rep(NA, length(unique(folds)))
-    CV_plug_ins <- rep(NA, length(unique(folds)))
-    CV_var_ests <- rep(NA, length(unique(folds)))
-    split_one_step_fulls <- rep(NA, length(unique(folds)))
-    split_plug_in_fulls <- rep(NA, length(unique(folds)))
-    split_one_step_reduceds <- rep(NA, length(unique(folds)))
-    split_plug_in_reduceds <- rep(NA, length(unique(folds)))
-    split_var_est_fulls <- rep(NA, length(unique(folds)))
-    split_var_est_reduceds <- rep(NA, length(unique(folds)))
-    for (j in 1:length(unique(folds))){
+    CV_full_plug_ins <- rep(NA, V)
+    CV_reduced_plug_ins <- rep(NA, V)
+    CV_full_one_steps <- rep(NA, V)
+    CV_reduced_one_steps <- rep(NA, V)
+    CV_one_steps <- rep(NA, V)
+    CV_plug_ins <- rep(NA, V)
+    CV_var_ests <- rep(NA, V)
+    split_one_step_fulls <- rep(NA, V)
+    split_plug_in_fulls <- rep(NA, V)
+    split_one_step_reduceds <- rep(NA, V)
+    split_plug_in_reduceds <- rep(NA, V)
+    split_var_est_fulls <- rep(NA, V)
+    split_var_est_reduceds <- rep(NA, V)
+    for (j in 1:V){
       time_holdout <- time[folds == j]
       event_holdout <- event[folds == j]
       V_0 <- estimate_accuracy(time = time_holdout,
@@ -45,18 +73,20 @@ vim_accuracy <- function(time,
                                 preds = fs_hat[[j]][,i],
                                 S_hat = S_hat[[j]],
                                 G_hat = G_hat[[j]])
-      CV_fulls[j] <- V_0$one_step
-      CV_reduceds[j] <- V_0s$one_step
+      CV_full_one_steps[j] <- V_0$one_step
+      CV_full_plug_ins[j] <- V_0$plug_in
+      CV_reduced_one_steps[j] <- V_0s$one_step
+      CV_reduced_plug_ins[j] <- V_0s$plug_in
       CV_one_steps[j] <-  V_0$one_step -V_0s$one_step
       CV_plug_ins[j] <-  V_0$plug_in -V_0s$plug_in
       split_one_step_fulls[j] <- V_0$one_step
       split_plug_in_fulls[j] <- V_0$plug_in
       split_one_step_reduceds[j] <- V_0s$one_step
       split_plug_in_reduceds[j] <- V_0s$plug_in
-      split_var_est_fulls[j] <- mean(V_0$if_func^2)
-      split_var_est_reduceds[j] <- mean(V_0s$if_func^2)
-      if_func <- V_0$if_func - V_0s$if_func
-      CV_var_ests[j] <- mean(if_func^2)
+      split_var_est_fulls[j] <- mean(V_0$EIF^2)
+      split_var_est_reduceds[j] <- mean(V_0s$EIF^2)
+      EIF <- V_0$EIF - V_0s$EIF
+      CV_var_ests[j] <- mean(EIF^2)
 
     }
 
@@ -65,23 +95,30 @@ vim_accuracy <- function(time,
         mean(split_one_step_reduceds[sort(unique(folds[ss_folds == 1]))])
       plug_in[i] <- mean(split_plug_in_fulls[sort(unique(folds[ss_folds == 0]))]) -
         mean(split_plug_in_reduceds[sort(unique(folds[ss_folds == 1]))])
-      full[i] <- mean(split_one_step_fulls[sort(unique(folds[ss_folds == 0]))])
-      reduced[i] <- mean(split_one_step_reduceds[sort(unique(folds[ss_folds == 1]))])
+      full_one_step[i] <- mean(split_one_step_fulls[sort(unique(folds[ss_folds == 0]))])
+      full_plug_in[i] <- mean(split_plug_in_fulls[sort(unique(folds[ss_folds == 0]))])
+      reduced_one_step[i] <- mean(split_one_step_reduceds[sort(unique(folds[ss_folds == 1]))])
+      reduced_plug_in[i] <- mean(split_plug_in_reduceds[sort(unique(folds[ss_folds == 1]))])
       var_est[i] <- mean(split_var_est_fulls[sort(unique(folds[ss_folds == 0]))]) +
         mean(split_var_est_reduceds[sort(unique(folds[ss_folds == 1]))])
     } else{
       one_step[i] <- mean(CV_one_steps)
       plug_in[i] <- mean(CV_plug_ins)
       var_est[i] <- mean(CV_var_ests)
-      full[i] <- mean(CV_fulls)#V_0$one_step
-      reduced[i] <- mean(CV_reduceds)#V_0s$one_step
+      full_one_step[i] <- mean(CV_full_one_steps)
+      reduced_one_step[i] <- mean(CV_reduced_one_steps)
+      full_plug_in[i] <- mean(CV_full_plug_ins)
+      reduced_plug_in[i] <- mean(CV_reduced_plug_ins)
     }
+
   }
 
   return(data.frame(t = landmark_times,
-                    full = full,
-                    reduced = reduced,
+                    full_one_step = full_one_step,
+                    reduced_one_step = reduced_one_step,
                     one_step = one_step,
                     plug_in = plug_in,
+                    full_plug_in = full_plug_in,
+                    reduced_plug_in = reduced_plug_in,
                     var_est = var_est))
 }

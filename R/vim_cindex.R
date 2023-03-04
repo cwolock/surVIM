@@ -152,18 +152,14 @@ vim_cindex <- function(time,
                            approx_times = approx_times,
                            tau = tau,
                            preds = f_hat[[j]],
-                           preds_holdout = preds_holdout,
                            S_hat = S_hat[[j]],
-                           S_hat_holdout = S_hat_holdout,
                            G_hat = G_hat[[j]])
     V_0s <- surVIM:::estimate_cindex(time = time_holdout,
                             event = event_holdout,
                             approx_times = approx_times,
                             tau = tau,
                             preds = fs_hat[[j]],
-                            preds_holdout = preds_holdout_reduced,
                             S_hat = S_hat[[j]],
-                            S_hat_holdout = S_hat_holdout,
                             G_hat = G_hat[[j]])
     CV_fulls[j] <- V_0$one_step
     CV_reduceds[j] <- V_0s$one_step

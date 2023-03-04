@@ -4,9 +4,7 @@ estimate_cindex <- function(time,
                             preds,
                             S_hat,
                             G_hat,
-                            tau,
-                            preds_holdout,
-                            S_hat_holdout){
+                            tau){
 
   n <- length(time)
   # calculate integral for KM influence function
@@ -37,7 +35,6 @@ estimate_cindex <- function(time,
                    nrow = n)
 
   S_hat_k <- S_hat[,approx_times <= tau]
-  S_hat_k_holdout <- S_hat_holdout[,approx_times <= tau]
   KM_ifs_k <- KM_ifs[,approx_times <= tau]
 
   k <- length(approx_times)
@@ -45,20 +42,31 @@ estimate_cindex <- function(time,
   calc_phi_01 <- function(j){
     fx <- preds[j]
     varphi_x <- KM_ifs_k[j,]
-    exceed_probs1 <- -rowSums(sweep(S_hat_k_holdout[,-k], MARGIN=2, diff(varphi_x), `*`))
-    exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k_holdout))), MARGIN=2, varphi_x[-k], `*`))
-    int <- mean(ifelse(fx > preds_holdout, 1, 0)* exceed_probs1 + ifelse(preds_holdout > fx, 1, 0)* exceed_probs2)
+    exceed_probs1 <- -rowSums(sweep(S_hat_k[,-k], MARGIN=2, diff(varphi_x), `*`))
+    exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, varphi_x[-k], `*`))
+    int <- mean(ifelse(fx > preds, 1, 0)* exceed_probs1 + ifelse(preds > fx, 1, 0)* exceed_probs2)
     return(int)
   }
 
   phi_01 <- unlist(lapply(1:n, FUN = calc_phi_01))
 
+  calc_phi_01_extra <- function(j){
+    fx <- preds[j]
+    varphi_x <- KM_ifs_k[j,]
+    exceed_probs1 <- -rowSums(sweep(KM_ifs_k[,-k], MARGIN=2, diff(varphi_x), `*`))
+    exceed_probs2 <- -rowSums(sweep(t(diff(t(KM_ifs_k))), MARGIN=2, varphi_x[-k], `*`))
+    int <- mean(ifelse(fx > preds, 1, 0)* exceed_probs1 + ifelse(preds > fx, 1, 0)* exceed_probs2)
+    return(int)
+  }
+
+  phi_01_extra <- unlist(lapply(1:n, FUN = calc_phi_01_extra))
+
   calc_phi_tilde_01 <- function(j){
     fx <- preds[j]
     Sx <- S_hat_k[j,]
-    exceed_probs1 <- -rowSums(sweep(S_hat_k_holdout[,-k], MARGIN=2, diff(Sx), `*`))
-    exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k_holdout))), MARGIN=2, Sx[-k], `*`))
-    int <- mean(ifelse(fx > preds_holdout, 1, 0)* exceed_probs1 + ifelse(preds_holdout > fx, 1, 0)* exceed_probs2)
+    exceed_probs1 <- -rowSums(sweep(S_hat_k[,-k], MARGIN=2, diff(Sx), `*`))
+    exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, Sx[-k], `*`))
+    int <- mean(ifelse(fx > preds, 1, 0)* exceed_probs1 + ifelse(preds > fx, 1, 0)* exceed_probs2)
     return(int)
   }
 
@@ -66,18 +74,28 @@ estimate_cindex <- function(time,
 
   calc_phi_02 <- function(j){
     varphi_x <- KM_ifs_k[j,]
-    exceed_probs1 <- -rowSums(sweep(S_hat_k_holdout[,-k], MARGIN=2, diff(varphi_x), `*`))
-    exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k_holdout))), MARGIN=2, varphi_x[-k], `*`))
+    exceed_probs1 <- -rowSums(sweep(S_hat_k[,-k], MARGIN=2, diff(varphi_x), `*`))
+    exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, varphi_x[-k], `*`))
     int <- mean(exceed_probs1 + exceed_probs2)
     return(int)
   }
 
   phi_02 <- unlist(lapply(1:n, FUN = calc_phi_02))
 
+  calc_phi_02_extra <- function(j){
+    varphi_x <- KM_ifs_k[j,]
+    exceed_probs1 <- -rowSums(sweep(KM_ifs_k[,-k], MARGIN=2, diff(varphi_x), `*`))
+    exceed_probs2 <- -rowSums(sweep(t(diff(t(KM_ifs_k))), MARGIN=2, varphi_x[-k], `*`))
+    int <- mean(exceed_probs1 + exceed_probs2)
+    return(int)
+  }
+
+  phi_02_extra <- unlist(lapply(1:n, FUN = calc_phi_02_extra))
+
   calc_phi_tilde_02 <- function(j){
     Sx <- S_hat_k[j,]
-    exceed_probs1 <- -rowSums(sweep(S_hat_k_holdout[,-k], MARGIN=2, diff(Sx), `*`))
-    exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k_holdout))), MARGIN=2, Sx[-k], `*`))
+    exceed_probs1 <- -rowSums(sweep(S_hat_k[,-k], MARGIN=2, diff(Sx), `*`))
+    exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, Sx[-k], `*`))
     int <- mean(exceed_probs1 + exceed_probs2)
     return(int)
   }
@@ -86,19 +104,21 @@ estimate_cindex <- function(time,
 
   phi_tilde_01 <- phi_tilde_01_uncentered - mean(phi_tilde_01_uncentered)
   phi_tilde_02 <- phi_tilde_02_uncentered - mean(phi_tilde_02_uncentered)
+
+
   V_1 <- mean(phi_tilde_01_uncentered)/2
   V_2 <- mean(phi_tilde_02_uncentered)/2
-
-  if_func_1 <- phi_01 + phi_tilde_01
-  if_func_2 <- phi_02 + phi_tilde_02
-
+  #
+  if_func_1 <- phi_01 + phi_tilde_01 + phi_01_extra
+  if_func_2 <- phi_02 + phi_tilde_02 + phi_02_extra
+  #
   V_1_os <- V_1 + mean(if_func_1)
   V_2_os <- V_2 + mean(if_func_2)
+
   one_step <- V_1_os/V_2_os
 
   if_func <- (phi_01 + phi_tilde_01)/V_2 - V_1/(V_2^2)*(phi_02 + phi_tilde_02)
   plug_in <- V_1/V_2
-  # one_step <- V_1/V_2 + mean(if_func)
 
   return(list(one_step = one_step,
               plug_in = plug_in,
