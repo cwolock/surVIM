@@ -1,3 +1,23 @@
+#' Estimate concordance index VIM
+#'
+#' @param time \code{n x 1} numeric vector of observed
+#' follow-up times If there is censoring, these are the minimum of the
+#' event and censoring times.
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.
+#' @param time_grid_approx Numeric vector of length J1 giving times at which to
+#' approximate integrals.
+#' @param tau restriction time
+#' @param f_hat Full oracle predictions (n x J1 matrix)
+#' @param fs_hat Residual oracle predictions (n x J1 matrix)
+#' @param S_hat Estimates of conditional event time survival function (n x J2 matrix)
+#' @param G_hat Estimate of conditional censoring time survival function (n x J2 matrix)
+#' @param folds Numeric vector of length n giving cross-fitting folds
+#' @param sample_split Logical indicating whether or not to sample split
+#' @param ss_folds Numeric vector of length n giving sample-splitting folds
+#'
+#' @return data frame giving results
+
 vim_cindex <- function(time,
                        event,
                        approx_times,
@@ -10,143 +30,31 @@ vim_cindex <- function(time,
                        sample_split,
                        ss_folds){
 
-  # CV_fulls <- rep(NA, length(unique(folds)))
-  # CV_reduceds <- rep(NA, length(unique(folds)))
-  # CV_one_steps <- rep(NA, length(unique(folds)))
-  # CV_plug_ins <- rep(NA, length(unique(folds)))
-  # CV_var_ests <- rep(NA, length(unique(folds)))
-  # split_one_step_fulls <- rep(NA, length(unique(folds)))
-  # split_plug_in_fulls <- rep(NA, length(unique(folds)))
-  # split_one_step_reduceds <- rep(NA, length(unique(folds)))
-  # split_plug_in_reduceds <- rep(NA, length(unique(folds)))
-  # split_var_est_fulls <- rep(NA, length(unique(folds)))
-  # split_var_est_reduceds <- rep(NA, length(unique(folds)))
-  # for (j in 1:length(unique(folds))){
-  #   time_holdout <- time[folds == j]
-  #   event_holdout <- event[folds == j]
-  #   if (length(unique(folds)) > 1){
-  #     subfolds <- ss_folds[folds != j]
-  #     if (sample_split){
-  #       curr_folds <- which(subfolds == unique(ss_folds[folds == j]))
-  #       preds_holdout <- unlist(lapply(f_hat, function(x) x[,i])[-j])[curr_folds]
-  #       S_hat_holdout = do.call(rbind, S_hat[-j])[curr_folds,]
-  #       preds_holdout_reduced = unlist(lapply(fs_hat, function(x) x[,i])[-j])[curr_folds]
-  #     } else{
-  #       preds_holdout <- unlist(lapply(f_hat, function(x) x[,i])[-j])
-  #       S_hat_holdout = do.call(rbind, S_hat[-j])
-  #       preds_holdout_reduced = unlist(lapply(fs_hat, function(x) x[,i])[-j])
-  #     }
-  #
-  #   } else{
-  #     preds_holdout <- f_hat[[j]][,i]
-  #     S_hat_holdout = S_hat[[j]]
-  #     preds_holdout_reduced = fs_hat[[j]][,i]
-  #   }
-  #   V_0 <- estimate_cindex_newxfit_newapprox(time = time_holdout,
-  #                          event = event_holdout,
-  #                          approx_times = approx_times,
-  #                          tau = tau,
-  #                          preds = f_hat[[j]][,i],
-  #                          preds_holdout = preds_holdout,
-  #                          S_hat = S_hat[[j]],
-  #                          S_hat_holdout = S_hat_holdout,
-  #                          G_hat = G_hat[[j]])
-  #   V_0s <- estimate_cindex_newxfit_newapprox(time = time_holdout,
-  #                           event = event_holdout,
-  #                           approx_times = approx_times,
-  #                           tau = tau,
-  #                           preds = fs_hat[[j]][,i],
-  #                           preds_holdout = preds_holdout_reduced,
-  #                           S_hat = S_hat[[j]],
-  #                           S_hat_holdout = S_hat_holdout,
-  #                           G_hat = G_hat[[j]])
-  #   CV_fulls[j] <- V_0$one_step
-  #   CV_reduceds[j] <- V_0s$one_step
-  #   CV_one_steps[j] <-  V_0$one_step -V_0s$one_step
-  #   CV_plug_ins[j] <-  V_0$plug_in -V_0s$plug_in
-  #   # split_one_step_fulls[j] <- V_0$one_step
-  #   # split_plug_in_fulls[j] <- V_0$plug_in
-  #   # split_one_step_reduceds[j] <- V_0s$one_step
-  #   # split_plug_in_reduceds[j] <- V_0s$plug_in
-  #   # split_var_est_fulls[j] <- mean(V_0$if_func^2)
-  #   # split_var_est_reduceds[j] <- mean(V_0s$if_func^2)
-  #   if_func <- V_0$if_func - V_0s$if_func
-  #   CV_var_ests[j] <- mean(if_func^2)
-  # }
-  #
-  # if (sample_split){
-  #   ss_folds <- sample(rep(1:2, length = length(unique(folds))))
-  #   one_step <- mean(split_one_step_fulls[ss_folds == 1]) - mean(split_one_step_reduceds[ss_folds == 2])
-  #   plug_in <- mean(split_plug_in_fulls[ss_folds == 1]) - mean(split_plug_in_reduceds[ss_folds == 2])
-  #   full <- mean(split_one_step_fulls[ss_folds == 1])
-  #   reduced <- mean(split_one_step_reduceds[ss_folds == 2])
-  #   var_est <- mean(split_var_est_fulls[ss_folds == 1]) + mean(split_var_est_reduceds[ss_folds == 2])
-  # } else{
-  #   one_step <- mean(CV_one_steps)
-  #   plug_in <- mean(CV_plug_ins)
-  #   var_est <- mean(CV_var_ests)
-  #   full <- mean(CV_fulls)#V_0$one_step
-  #   reduced <- mean(CV_reduceds)#V_0s$one_step
-  # }
-  #
-  #
-  # return(data.frame(tau = tau,
-  #                   full = full,
-  #                   reduced = reduced,
-  #                   one_step = one_step,
-  #                   plug_in = plug_in,
-  #                   var_est = var_est))
+  V <- length(unique(folds))
 
-  # one_step <- rep(NA, length(landmark_times))
-  # plug_in <- rep(NA, length(landmark_times))
-  # var_est <- rep(NA, length(landmark_times))
-  # full <- rep(NA, length(landmark_times))
-  # reduced <- rep(NA, length(landmark_times))
-  CV_fulls <- rep(NA, length(unique(folds)))
-  CV_reduceds <- rep(NA, length(unique(folds)))
-  CV_one_steps <- rep(NA, length(unique(folds)))
-  CV_plug_ins <- rep(NA, length(unique(folds)))
-  CV_var_ests <- rep(NA, length(unique(folds)))
-  split_one_step_fulls <- rep(NA, length(unique(folds)))
-  split_plug_in_fulls <- rep(NA, length(unique(folds)))
-  split_one_step_reduceds <- rep(NA, length(unique(folds)))
-  split_plug_in_reduceds <- rep(NA, length(unique(folds)))
-  split_var_est_fulls <- rep(NA, length(unique(folds)))
-  split_var_est_reduceds <- rep(NA, length(unique(folds)))
-  for (j in 1:length(unique(folds))){
+  CV_full_plug_ins <- rep(NA, V)
+  CV_reduced_plug_ins <- rep(NA, V)
+  CV_full_one_steps <- rep(NA, V)
+  CV_reduced_one_steps <- rep(NA, V)
+  CV_one_steps <- rep(NA, V)
+  CV_var_ests <- rep(NA, V)
+  CV_full_numerators <- rep(NA, V)
+  CV_reduced_numerators <- rep(NA, V)
+  CV_denominators <- rep(NA, V)
+  split_numerator_fulls <- rep(NA, V)
+  split_denominator_fulls <- rep(NA, V)
+  split_numerator_reduceds <- rep(NA, V)
+  split_denominator_reduceds <- rep(NA, V)
+  split_one_step_fulls <- rep(NA, V)
+  split_plug_in_fulls <- rep(NA, V)
+  split_one_step_reduceds <- rep(NA, V)
+  split_plug_in_reduceds <- rep(NA, V)
+  split_var_est_fulls <- rep(NA, V)
+  split_var_est_reduceds <- rep(NA, V)
+  for (j in 1:V){
     time_holdout <- time[folds == j]
     event_holdout <- event[folds == j]
-    if (length(unique(folds)) > 1){
-      subfolds <- ss_folds[folds != j]
-      if (sample_split & length(unique(folds)) > 2){
-        other_js <- unique(folds[ss_folds == unique(ss_folds[folds == j]) & folds != j])
-        #curr_folds <- which(subfolds == unique(ss_folds[folds == j]))
-        # preds_holdout <- unlist(f_hat[-j])[curr_folds]
-        # S_hat_holdout = do.call(rbind, S_hat[-j])[curr_folds,]
-        # preds_holdout_reduced = unlist(fs_hat[-j])[curr_folds]
-        preds_holdout <- unlist(f_hat[other_js])
-        S_hat_holdout = do.call(rbind, S_hat[other_js])
-        preds_holdout_reduced = unlist(fs_hat[other_js])
-      } else if (sample_split & length(unique(folds)) <= 2){
-        preds_holdout <- f_hat[[j]]
-        S_hat_holdout <- S_hat[[j]]
-        preds_holdout_reduced <- fs_hat[[j]]
-      } else{
-        preds_holdout <- unlist(f_hat[-j])
-        S_hat_holdout = do.call(rbind, S_hat[-j])
-        preds_holdout_reduced = unlist(fs_hat[-j])
-        # preds_holdout <- f_hat[[j]]
-        # S_hat_holdout <- S_hat[[j]]
-        # preds_holdout_reduced <- fs_hat[[j]]
-      }
 
-    } else{
-      preds_holdout <- f_hat[[j]]
-      S_hat_holdout = S_hat[[j]]
-      preds_holdout_reduced = fs_hat[[j]]
-    }
-
-    # fix bug here in how the holdout data is picked with sample splitting
     V_0 <- surVIM:::estimate_cindex(time = time_holdout,
                            event = event_holdout,
                            approx_times = approx_times,
@@ -161,43 +69,53 @@ vim_cindex <- function(time,
                             preds = fs_hat[[j]],
                             S_hat = S_hat[[j]],
                             G_hat = G_hat[[j]])
-    CV_fulls[j] <- V_0$one_step
-    CV_reduceds[j] <- V_0s$one_step
+    CV_full_one_steps[j] <- V_0$one_step
+    CV_full_plug_ins[j] <- V_0$plug_in
+    CV_reduced_one_steps[j] <- V_0s$one_step
+    CV_reduced_plug_ins[j] <- V_0s$plug_in
     CV_one_steps[j] <-  V_0$one_step -V_0s$one_step
-    CV_plug_ins[j] <-  V_0$plug_in -V_0s$plug_in
+    CV_full_numerators[j] <- V_0$numerator
+    CV_reduced_numerators[j] <- V_0s$numerator
+    CV_denominators[j] <- V_0$denominator
+    split_numerator_fulls[j] <- V_0$numerator
+    split_denominator_fulls[j] <- V_0$denominator
+    split_numerator_reduceds[j] <- V_0s$numerator
+    split_denominator_reduceds[j] <- V_0s$denominator
     split_one_step_fulls[j] <- V_0$one_step
     split_plug_in_fulls[j] <- V_0$plug_in
     split_one_step_reduceds[j] <- V_0s$one_step
     split_plug_in_reduceds[j] <- V_0s$plug_in
-    split_var_est_fulls[j] <- mean(V_0$if_func^2)
-    split_var_est_reduceds[j] <- mean(V_0s$if_func^2)
-    if_func <- V_0$if_func - V_0s$if_func
-    CV_var_ests[j] <- mean(if_func^2)
+    split_var_est_fulls[j] <- mean(V_0$EIF^2)
+    split_var_est_reduceds[j] <- mean(V_0s$EIF^2)
+    EIF <- V_0$EIF - V_0s$EIF
+    CV_var_ests[j] <- mean(EIF^2)
   }
-
 
   if (sample_split){
-    one_step <- mean(split_one_step_fulls[sort(unique(folds[ss_folds == 0]))]) -
-      mean(split_one_step_reduceds[sort(unique(folds[ss_folds == 1]))])
-    plug_in <- mean(split_plug_in_fulls[sort(unique(folds[ss_folds == 0]))]) -
-      mean(split_plug_in_reduceds[sort(unique(folds[ss_folds == 1]))])
-    full <- mean(split_one_step_fulls[sort(unique(folds[ss_folds == 0]))])
-    reduced <- mean(split_one_step_reduceds[sort(unique(folds[ss_folds == 1]))])
-    var_est <- mean(split_var_est_fulls[sort(unique(folds[ss_folds == 0]))]) +
-      mean(split_var_est_reduceds[sort(unique(folds[ss_folds == 1]))])
+    folds_0 <- sort(unique(folds[ss_folds == 0]))
+    folds_1 <- sort(unique(folds[ss_folds == 1]))
+    one_step <- mean(split_numerator_fulls[folds_0])/mean(split_denominator_fulls[folds_0]) -
+      mean(split_numerator_reduceds[folds_1])/mean(split_denominator_reduceds[folds_1])
+    full_one_step <- mean(split_numerator_fulls[folds_0])/mean(split_denominator_fulls[folds_0])
+    full_plug_in <- mean(split_plug_in_fulls[folds_0])
+    reduced_one_step <- mean(split_numerator_fulls[folds_1])/mean(split_denominator_fulls[folds_1])
+    reduced_plug_in <- mean(split_plug_in_reduceds[folds_1])
+    var_est <- mean(split_var_est_fulls[folds_0]) +
+      mean(split_var_est_reduceds[folds_1])
   } else{
-    one_step <- mean(CV_one_steps)
-    plug_in <- mean(CV_plug_ins)
+    one_step <- mean(CV_full_numerators - CV_reduced_numerators)/mean(CV_denominators)#mean(CV_one_steps)
     var_est <- mean(CV_var_ests)
-    full <- mean(CV_fulls)#V_0$one_step
-    reduced <- mean(CV_reduceds)#V_0s$one_step
+    full_one_step <- mean(CV_full_numerators)/mean(CV_denominators)#mean(CV_full_one_steps)
+    reduced_one_step <- mean(CV_reduced_numerators)/mean(CV_denominators)#mean(CV_reduced_one_steps)
+    full_plug_in <- mean(CV_full_plug_ins)
+    reduced_plug_in <- mean(CV_reduced_plug_ins)
   }
 
-
   return(data.frame(tau = tau,
-                    full = full,
-                    reduced = reduced,
+                    full_one_step = full_one_step,
+                    reduced_one_step = reduced_one_step,
                     one_step = one_step,
-                    plug_in = plug_in,
+                    full_plug_in = full_plug_in,
+                    reduced_plug_in = reduced_plug_in,
                     var_est = var_est))
 }
