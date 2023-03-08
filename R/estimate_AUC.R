@@ -19,10 +19,6 @@ estimate_AUC<- function(time,
   G_hat_k <- G_hat[,k]
   KM_IFs <- KM_IFs[,k]
 
-  preds <- rnorm(50)
-  S_hat_k <- rnorm(50)
-  KM_IFs <- rnorm(50)
-
   calc_phi_01 <- function(j){
     fx <- preds[j]
     varphi_x <- KM_IFs[j]
