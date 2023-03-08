@@ -19,6 +19,10 @@ estimate_AUC<- function(time,
   G_hat_k <- G_hat[,k]
   KM_IFs <- KM_IFs[,k]
 
+  preds <- rnorm(50)
+  S_hat_k <- rnorm(50)
+  KM_IFs <- rnorm(50)
+
   calc_phi_01 <- function(j){
     fx <- preds[j]
     varphi_x <- KM_IFs[j]
@@ -38,13 +42,34 @@ estimate_AUC<- function(time,
   calc_phi_tilde_01 <- function(j){
     fx <- preds[j]
     Sx <- S_hat_k[j]
-    varphi_x <- KM_IFs[j]
     int <- mean(ifelse(preds > fx, 1, 0) * (1 - S_hat_k) * (Sx) +
                   ifelse(preds <= fx, 1, 0) * (S_hat_k) * (1 - Sx))
     return(int)
   }
 
+  # calc_phi_01_othercross <- function(j){
+  #   fx <- preds[j]
+  #   varphi_x <- KM_IFs[j]
+  #   Sx <- S_hat_k[j]
+  #   int <- mean(-ifelse(preds > fx, 1, 0) * KM_IFs *Sx +
+  #                 ifelse(preds <= fx, 1, 0) * KM_IFs*(1-Sx))
+  #   return(int)
+  # }
 
+  calc_phi_01_combined <- function(j){
+    fx <- preds[j]
+    Sx <- S_hat_k[j]
+    varphi_x <- KM_IFs[j]
+    int <- mean(ifelse(preds > fx, 1, 0) * (1 - S_hat_k - KM_IFs) * (Sx + varphi_x) +
+                  ifelse(preds <= fx, 1, 0) * (S_hat_k + KM_IFs) * (1 - Sx - varphi_x))
+  }
+
+  calc_phi_02_combined <- function(j){
+    Sx <- S_hat_k[j]
+    varphi_x <- KM_IFs[j]
+    int <- mean((1 - S_hat_k - KM_IFs) * (Sx + varphi_x) +
+                  (S_hat_k + KM_IFs) * (1 - Sx - varphi_x))
+  }
 
   calc_phi_02 <- function(j){
     varphi_x <- KM_IFs[j]
@@ -67,6 +92,9 @@ estimate_AUC<- function(time,
   phi_01 <- unlist(lapply(1:n, FUN = calc_phi_01))
   phi_01_extra <- unlist(lapply(1:n, FUN = calc_phi_01_extra))
   phi_tilde_01_uncentered <- unlist(lapply(1:n, FUN = calc_phi_tilde_01))
+  # phi_01_othercross <- unlist(lapply(1:n, FUN = calc_phi_01_othercross))
+  phi_01_combined <- unlist(lapply(1:n, FUN = calc_phi_01_combined))
+  phi_02_combined <- unlist(lapply(1:n, FUN = calc_phi_02_combined))
   phi_02 <- unlist(lapply(1:n, FUN = calc_phi_02))
   phi_02_extra <- unlist(lapply(1:n, FUN = calc_phi_02_extra))
   phi_tilde_02_uncentered <- unlist(lapply(1:n, FUN = calc_phi_tilde_02))
@@ -81,7 +109,9 @@ estimate_AUC<- function(time,
   if_func_2 <- phi_02 + phi_tilde_02 + phi_02_extra
 
   V_1_os <- V_1 + mean(if_func_1)
+  V_1_alternative <- mean(phi_01_combined)/2
   V_2_os <- V_2 + mean(if_func_2)
+  V_2_alternative <- mean(phi_02_combined)/2
 
   one_step <- V_1_os/V_2_os
 
@@ -91,6 +121,6 @@ estimate_AUC<- function(time,
   return(list(one_step = one_step,
               plug_in = plug_in,
               EIF = EIF,
-              numerator = V_1_os,
-              denominator = V_2_os))
+              numerator = V_1_alternative,
+              denominator = V_2_alternative))
 }
