@@ -34,9 +34,6 @@ vim_cindex <- function(time,
 
   CV_full_plug_ins <- rep(NA, V)
   CV_reduced_plug_ins <- rep(NA, V)
-  CV_full_one_steps <- rep(NA, V)
-  CV_reduced_one_steps <- rep(NA, V)
-  CV_one_steps <- rep(NA, V)
   CV_var_ests <- rep(NA, V)
   CV_full_numerators <- rep(NA, V)
   CV_reduced_numerators <- rep(NA, V)
@@ -45,9 +42,7 @@ vim_cindex <- function(time,
   split_denominator_fulls <- rep(NA, V)
   split_numerator_reduceds <- rep(NA, V)
   split_denominator_reduceds <- rep(NA, V)
-  split_one_step_fulls <- rep(NA, V)
   split_plug_in_fulls <- rep(NA, V)
-  split_one_step_reduceds <- rep(NA, V)
   split_plug_in_reduceds <- rep(NA, V)
   split_var_est_fulls <- rep(NA, V)
   split_var_est_reduceds <- rep(NA, V)
@@ -69,11 +64,9 @@ vim_cindex <- function(time,
                             preds = fs_hat[[j]],
                             S_hat = S_hat[[j]],
                             G_hat = G_hat[[j]])
-    CV_full_one_steps[j] <- V_0$one_step
+
     CV_full_plug_ins[j] <- V_0$plug_in
-    CV_reduced_one_steps[j] <- V_0s$one_step
     CV_reduced_plug_ins[j] <- V_0s$plug_in
-    CV_one_steps[j] <-  V_0$one_step -V_0s$one_step
     CV_full_numerators[j] <- V_0$numerator
     CV_reduced_numerators[j] <- V_0s$numerator
     CV_denominators[j] <- V_0$denominator
@@ -81,9 +74,7 @@ vim_cindex <- function(time,
     split_denominator_fulls[j] <- V_0$denominator
     split_numerator_reduceds[j] <- V_0s$numerator
     split_denominator_reduceds[j] <- V_0s$denominator
-    split_one_step_fulls[j] <- V_0$one_step
     split_plug_in_fulls[j] <- V_0$plug_in
-    split_one_step_reduceds[j] <- V_0s$one_step
     split_plug_in_reduceds[j] <- V_0s$plug_in
     split_var_est_fulls[j] <- mean(V_0$EIF^2)
     split_var_est_reduceds[j] <- mean(V_0s$EIF^2)

@@ -46,6 +46,29 @@ estimate_cindex <- function(time,
     return(int)
   }
 
+  calc_phi_01_combined <- function(j){
+    fx <- preds[j]
+    Sx <- S_hat_k[j,]
+    varphi_x <- KM_IFs_k[j,]
+    pi_x <- Sx + varphi_x
+    pi_k <- S_hat_k + KM_IFs_k
+    exceed_probs1 <- -rowSums(sweep(pi_k[,-k], MARGIN=2, diff(pi_x), `*`))
+    exceed_probs2 <- -rowSums(sweep(t(diff(t(pi_k))), MARGIN=2, pi_x[-k], `*`))
+    int <- mean(ifelse(fx > preds, 1, 0)* exceed_probs1 + ifelse(preds > fx, 1, 0)* exceed_probs2)
+    return(int)
+  }
+
+  calc_phi_02_combined <- function(j){
+    Sx <- S_hat_k[j,]
+    varphi_x <- KM_IFs_k[j,]
+    pi_x <- Sx + varphi_x
+    pi_k <- S_hat_k + KM_IFs_k
+    exceed_probs1 <- -rowSums(sweep(pi_k[,-k], MARGIN=2, diff(pi_x), `*`))
+    exceed_probs2 <- -rowSums(sweep(t(diff(t(pi_k))), MARGIN=2, pi_x[-k], `*`))
+    int <- mean(exceed_probs1 + exceed_probs2)
+    return(int)
+  }
+
   calc_phi_02 <- function(j){
     varphi_x <- KM_IFs_k[j,]
     exceed_probs1 <- -rowSums(sweep(S_hat_k[,-k], MARGIN=2, diff(varphi_x), `*`))
@@ -80,6 +103,9 @@ estimate_cindex <- function(time,
   phi_tilde_01 <- phi_tilde_01_uncentered - mean(phi_tilde_01_uncentered)
   phi_tilde_02 <- phi_tilde_02_uncentered - mean(phi_tilde_02_uncentered)
 
+  phi_01_combined <- unlist(lapply(1:n, FUN = calc_phi_01_combined))
+  phi_02_combined <- unlist(lapply(1:n, FUN = calc_phi_02_combined))
+
   V_1 <- mean(phi_tilde_01_uncentered)/2
   V_2 <- mean(phi_tilde_02_uncentered)/2
 
@@ -88,6 +114,8 @@ estimate_cindex <- function(time,
 
   V_1_os <- V_1 + mean(if_func_1)
   V_2_os <- V_2 + mean(if_func_2)
+  V_1_alternative <- mean(phi_01_combined)/2
+  V_2_alternative <- mean(phi_02_combined)/2
 
   one_step <- V_1_os/V_2_os
 
@@ -96,5 +124,7 @@ estimate_cindex <- function(time,
 
   return(list(one_step = one_step,
               plug_in = plug_in,
-              EIF = EIF))
+              EIF = EIF,
+              numerator = V_1_alternative,
+              denominator = V_2_alternative))
 }
