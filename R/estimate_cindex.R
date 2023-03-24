@@ -17,14 +17,15 @@ estimate_cindex <- function(time,
   S_hat_k <- S_hat[,approx_times <= tau]
   KM_IFs_k <- KM_IFs[,approx_times <= tau]
 
-  k <- length(approx_times)
+  # k <- length(approx_times)
+  k <- sum(approx_times <= tau)
 
   calc_phi_01 <- function(j){
     fx <- preds[j]
     varphi_x <- KM_IFs_k[j,]
     exceed_probs1 <- -rowSums(sweep(S_hat_k[,-k], MARGIN=2, diff(varphi_x), `*`))
     exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, varphi_x[-k], `*`))
-    int <- mean(ifelse(fx > preds, 1, 0)* exceed_probs1 + ifelse(preds > fx, 1, 0)* exceed_probs2)
+    int <- mean(ifelse(fx >= preds, 1, 0)* exceed_probs1 + ifelse(preds > fx, 1, 0)* exceed_probs2)
     return(int)
   }
 
@@ -33,7 +34,7 @@ estimate_cindex <- function(time,
     varphi_x <- KM_IFs_k[j,]
     exceed_probs1 <- -rowSums(sweep(KM_IFs_k[,-k], MARGIN=2, diff(varphi_x), `*`))
     exceed_probs2 <- -rowSums(sweep(t(diff(t(KM_IFs_k))), MARGIN=2, varphi_x[-k], `*`))
-    int <- mean(ifelse(fx > preds, 1, 0)* exceed_probs1 + ifelse(preds > fx, 1, 0)* exceed_probs2)
+    int <- mean(ifelse(fx >= preds, 1, 0)* exceed_probs1 + ifelse(preds > fx, 1, 0)* exceed_probs2)
     return(int)
   }
 
@@ -42,7 +43,7 @@ estimate_cindex <- function(time,
     Sx <- S_hat_k[j,]
     exceed_probs1 <- -rowSums(sweep(S_hat_k[,-k], MARGIN=2, diff(Sx), `*`))
     exceed_probs2 <- -rowSums(sweep(t(diff(t(S_hat_k))), MARGIN=2, Sx[-k], `*`))
-    int <- mean(ifelse(fx > preds, 1, 0)* exceed_probs1 + ifelse(preds > fx, 1, 0)* exceed_probs2)
+    int <- mean(ifelse(fx >= preds, 1, 0)* exceed_probs1 + ifelse(preds > fx, 1, 0)* exceed_probs2)
     return(int)
   }
 
@@ -54,7 +55,7 @@ estimate_cindex <- function(time,
     pi_k <- S_hat_k + KM_IFs_k
     exceed_probs1 <- -rowSums(sweep(pi_k[,-k], MARGIN=2, diff(pi_x), `*`))
     exceed_probs2 <- -rowSums(sweep(t(diff(t(pi_k))), MARGIN=2, pi_x[-k], `*`))
-    int <- mean(ifelse(fx > preds, 1, 0)* exceed_probs1 + ifelse(preds > fx, 1, 0)* exceed_probs2)
+    int <- mean(ifelse(fx >= preds, 1, 0)* exceed_probs1 + ifelse(preds > fx, 1, 0)* exceed_probs2)
     return(int)
   }
 
