@@ -22,9 +22,14 @@ estimate_AUC<- function(time,
   calc_phi_01 <- function(j){
     fx <- preds[j]
     varphi_x <- KM_IFs[j]
-    int <- mean(ifelse(preds > fx, 1, 0) * (1 - S_hat_k) -
-                  ifelse(preds <= fx, 1, 0) * S_hat_k)
+    int <- mean(ifelse(preds > fx, 1, 0) * (1 - S_hat_k) - ifelse(preds <= fx, 1, 0) * S_hat_k)
     return(varphi_x*int)
+  }
+
+  calc_phi_02 <- function(j){
+    varphi_x <- KM_IFs[j]
+    int <- mean((1 - S_hat_k) - S_hat_k)
+    return(varphi_x * int)
   }
 
   calc_phi_01_extra <- function(j){
@@ -52,6 +57,21 @@ estimate_AUC<- function(time,
   #   return(int)
   # }
 
+  # calc_phi_01_combined <- function(j){
+  #   fx <- preds[j]
+  #   Sx <- S_hat_k[j]
+  #   varphi_x <- KM_IFs[j]
+  #   int <- mean(ifelse(preds > fx, 1, 0) * (1 - S_hat_k - KM_IFs) * (Sx + varphi_x) +
+  #                 ifelse(preds <= fx, 1, 0) * (S_hat_k + KM_IFs) * (1 - Sx - varphi_x))
+  # }
+  #
+  # calc_phi_02_combined <- function(j){
+  #   Sx <- S_hat_k[j]
+  #   varphi_x <- KM_IFs[j]
+  #   int <- mean((1 - S_hat_k - KM_IFs) * (Sx + varphi_x) +
+  #                 (S_hat_k + KM_IFs) * (1 - Sx - varphi_x))
+  # }
+
   calc_phi_01_combined <- function(j){
     fx <- preds[j]
     Sx <- S_hat_k[j]
@@ -64,13 +84,7 @@ estimate_AUC<- function(time,
     Sx <- S_hat_k[j]
     varphi_x <- KM_IFs[j]
     int <- mean((1 - S_hat_k - KM_IFs) * (Sx + varphi_x) +
-                  (S_hat_k + KM_IFs) * (1 - Sx - varphi_x))
-  }
-
-  calc_phi_02 <- function(j){
-    varphi_x <- KM_IFs[j]
-    int <- mean((1 - S_hat_k) - S_hat_k)
-    return(varphi_x * int)
+                 (S_hat_k + KM_IFs) * (1 - Sx - varphi_x))
   }
 
   calc_phi_02_extra <- function(j){

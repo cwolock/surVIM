@@ -89,7 +89,7 @@ vim_cindex <- function(time,
       mean(split_numerator_reduceds[folds_1])/mean(split_denominator_reduceds[folds_1])
     full_one_step <- mean(split_numerator_fulls[folds_0])/mean(split_denominator_fulls[folds_0])
     full_plug_in <- mean(split_plug_in_fulls[folds_0])
-    reduced_one_step <- mean(split_numerator_fulls[folds_1])/mean(split_denominator_fulls[folds_1])
+    reduced_one_step <- mean(split_numerator_reduceds[folds_1])/mean(split_denominator_reduceds[folds_1])
     reduced_plug_in <- mean(split_plug_in_reduceds[folds_1])
     var_est <- mean(split_var_est_fulls[folds_0]) +
       mean(split_var_est_reduceds[folds_1])

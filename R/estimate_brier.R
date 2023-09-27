@@ -25,7 +25,6 @@ estimate_brier <- function(time,
 
   one_step <- mean(2*preds*S_hat_k - preds^2 - S_hat_k) + mean(EIF)
   plug_in <- mean(2*preds*S_hat_k - preds^2 - S_hat_k)
-
   return(list(one_step = one_step,
               plug_in = plug_in,
               EIF = EIF))

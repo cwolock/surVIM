@@ -41,7 +41,7 @@ vim_accuracy <- function(time,
   reduced_plug_in <- rep(NA, J1)
 
   for(i in 1:J1) {
-    t0 <- landmark_times[i]
+    tau <- landmark_times[i]
     CV_full_plug_ins <- rep(NA, V)
     CV_reduced_plug_ins <- rep(NA, V)
     CV_full_one_steps <- rep(NA, V)
@@ -60,14 +60,14 @@ vim_accuracy <- function(time,
       V_0 <- estimate_accuracy(time = time_holdout,
                                event = event_holdout,
                                approx_times = approx_times,
-                               t0 = t0,
+                               tau = tau,
                                preds = f_hat[[j]][,i],
                                S_hat = S_hat[[j]],
                                G_hat = G_hat[[j]])
       V_0s <- estimate_accuracy(time = time_holdout,
                                 event = event_holdout,
                                 approx_times = approx_times,
-                                t0 = t0,
+                                tau = tau,
                                 preds = fs_hat[[j]][,i],
                                 S_hat = S_hat[[j]],
                                 G_hat = G_hat[[j]])
