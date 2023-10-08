@@ -29,7 +29,8 @@ vim_AUC <- function(time,
                     G_hat,
                     folds,
                     sample_split,
-                    ss_folds){
+                    ss_folds,
+                    robust){
 
   J1 <- length(landmark_times)
   V <- length(unique(folds))
@@ -65,14 +66,16 @@ vim_AUC <- function(time,
                           tau = tau,
                           preds = f_hat[[j]][,i],
                           S_hat = S_hat[[j]],
-                          G_hat = G_hat[[j]])
+                          G_hat = G_hat[[j]],
+                          robust = robust)
       V_0s <- estimate_AUC(time = time_holdout,
                            event = event_holdout,
                            approx_times = approx_times,
                            tau = tau,
                            preds = fs_hat[[j]][,i],
                            S_hat = S_hat[[j]],
-                           G_hat = G_hat[[j]])
+                           G_hat = G_hat[[j]],
+                           robust = robust)
 
       CV_full_plug_ins[j] <- V_0$plug_in
       CV_reduced_plug_ins[j] <- V_0s$plug_in
